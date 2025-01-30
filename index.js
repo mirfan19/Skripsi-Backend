@@ -1,10 +1,26 @@
-const db = require('./models'); // Adjust the path as necessary
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const db = require("./models"); // Import the models
+const routes = require("./routes"); // Import the routes
 
-// Example: Sync the database
-db.sequelize.sync({ force: true })
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
+// Use routes
+app.use("/api", routes);
+
+// Sync database and start server
+db.sequelize.sync()
   .then(() => {
-    console.log('Database & tables created!');
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   })
   .catch(err => {
-    console.error('There was an error creating the database:', err);
+    console.error('Unable to connect to the database:', err);
   });
