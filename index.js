@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./models"); // Import the models
 const routes = require("./routes"); // Import the routes
+const authRoutes = require('./routes/authRoutes'); // Import auth routes
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,6 +14,7 @@ app.use(bodyParser.json());
 
 // Use routes
 app.use("/api", routes);
+app.use("/auth", authRoutes); // Use auth routes
 
 // Sync database and start server
 db.sequelize.sync()
