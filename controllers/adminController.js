@@ -1,16 +1,27 @@
 'use strict';
 
 const { Admin } = require('../models');
+const bcrypt = require('bcryptjs');
 
+// Create a new admin
 exports.createAdmin = async (req, res) => {
   try {
-    const admin = await Admin.create(req.body);
+    const { Username, Password, Email, Phone, Role } = req.body;
+    const hashedPassword = await bcrypt.hash(Password, 10);
+    const admin = await Admin.create({
+      Username,
+      Password: hashedPassword,
+      Email,
+      Phone,
+      Role
+    });
     res.status(201).json(admin);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
+// Retrieve all admins
 exports.getAllAdmins = async (req, res) => {
   try {
     const admins = await Admin.findAll();
@@ -20,6 +31,7 @@ exports.getAllAdmins = async (req, res) => {
   }
 };
 
+// Find a single admin by ID
 exports.getAdminById = async (req, res) => {
   try {
     const admin = await Admin.findByPk(req.params.id);
@@ -32,11 +44,24 @@ exports.getAdminById = async (req, res) => {
   }
 };
 
+// Update an admin by ID
 exports.updateAdmin = async (req, res) => {
   try {
-    const [updated] = await Admin.update(req.body, {
-      where: { AdminID: req.params.id },
-    });
+    const { Username, Password, Email, Phone, Role } = req.body;
+    const hashedPassword = Password ? await bcrypt.hash(Password, 10) : undefined;
+    const [updated] = await Admin.update(
+      {
+        Username,
+        Password: hashedPassword,
+        Email,
+        Phone,
+        Role
+      },
+      {
+        where: { id: req.params.id },
+        individualHooks: true
+      }
+    );
     if (!updated) {
       return res.status(404).json({ error: 'Admin not found' });
     }
@@ -47,10 +72,11 @@ exports.updateAdmin = async (req, res) => {
   }
 };
 
+// Delete an admin by ID
 exports.deleteAdmin = async (req, res) => {
   try {
     const deleted = await Admin.destroy({
-      where: { AdminID: req.params.id },
+      where: { id: req.params.id },
     });
     if (!deleted) {
       return res.status(404).json({ error: 'Admin not found' });
