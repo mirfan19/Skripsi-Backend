@@ -17,4 +17,7 @@ router.put('/:id', adminController.updateAdmin);
 // Delete an admin by ID
 router.delete('/:id', adminController.deleteAdmin);
 
+// Create a new product
+router.post('/products', adminController.createProduct);
+
 module.exports = router;

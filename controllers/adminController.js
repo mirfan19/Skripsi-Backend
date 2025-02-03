@@ -1,6 +1,6 @@
 'use strict';
 
-const { Admin } = require('../models');
+const { Admin, Product } = require('../models');
 const bcrypt = require('bcryptjs');
 
 // Create a new admin
@@ -84,5 +84,22 @@ exports.deleteAdmin = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Create a new product
+exports.createProduct = async (req, res) => {
+  try {
+    const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
+    const product = await Product.create({
+      ProductName,
+      Description,
+      Price,
+      StockQuantity,
+      SupplierID
+    });
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };
