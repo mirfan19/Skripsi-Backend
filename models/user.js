@@ -2,21 +2,26 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Customer extends Model {
+  class User extends Model {
     static associate(models) {
-      Customer.hasMany(models.Order, {
+      User.hasMany(models.ActivityLog, {
+        foreignKey: 'AdminID',
+        as: 'ActivityLogs',
+      });
+
+      User.hasMany(models.Order, {
         foreignKey: 'CustomerID',
         as: 'Orders',
       });
 
-      Customer.hasMany(models.Wishlist, {
+      User.hasMany(models.Wishlist, {
         foreignKey: 'CustomerID',
         as: 'Wishlists',
       });
     }
   }
 
-  Customer.init(
+  User.init(
     {
       Username: {
         type: DataTypes.STRING,
@@ -39,9 +44,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      Address: {
+      Role: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      Address: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       RegistrationDate: {
         type: DataTypes.DATE,
@@ -50,11 +59,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: 'Customer',
-      tableName: 'Customers',
+      modelName: 'User',
+      tableName: 'Users',
       timestamps: false,
     }
   );
 
-  return Customer;
+  return User;
 };

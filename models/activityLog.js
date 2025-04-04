@@ -4,10 +4,7 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ActivityLog extends Model {
     static associate(models) {
-      ActivityLog.belongsTo(models.Admin, {
-        foreignKey: 'AdminID',
-        as: 'Admin',
-      });
+      ActivityLog.belongsTo(models.User, { foreignKey: 'AdminID', as: 'Admin' });
     }
   }
 

@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 // Import route modules
-const customerRoute = require("./customerRoutes");
-const adminRoute = require("./adminRoutes");
+const userRoute = require("./userRoutes");
 const productRoute = require("./productRoutes");
 const orderRoute = require("./orderRoutes");
 const orderItemRoute = require("./orderItemRoutes");
@@ -21,8 +20,7 @@ router.get("/", (req, res) => {
 });
 
 // Use route modules
-router.use("/v1/customers", customerRoute);
-router.use("/v1/admins", adminRoute);
+router.use("/v1/users", userRoute);
 router.use("/v1/products", productRoute);
 router.use("/v1/orders", orderRoute);
 router.use("/v1/orderItems", orderItemRoute);

@@ -4,9 +4,9 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Wishlist extends Model {
     static associate(models) {
-      Wishlist.belongsTo(models.Customer, {
+      Wishlist.belongsTo(models.User, {
         foreignKey: 'CustomerID',
-        as: 'Customer',
+        as: 'user',
       });
 
       Wishlist.belongsTo(models.Product, {

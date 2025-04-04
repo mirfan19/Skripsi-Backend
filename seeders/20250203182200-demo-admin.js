@@ -10,7 +10,7 @@ module.exports = {
         Password: await bcrypt.hash('password1', 10),
         Email: 'admin1@example.com',
         Phone: '1234567890',
-        Role: 'admin',
+        Role: 'user',
         RegistrationDate: new Date()
       },
       {
@@ -18,7 +18,7 @@ module.exports = {
         Password: await bcrypt.hash('password2', 10),
         Email: 'admin2@example.com',
         Phone: '0987654321',
-        Role: 'admin',
+        Role: 'user',
         RegistrationDate: new Date()
       }
     ], {});

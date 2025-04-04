@@ -1,19 +1,19 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Admin, Customer } = require('../models');
+const { User } = require('../models'); // Use 'User' instead of 'user'
 
-// Register a new user (Admin or Customer)
+// Register a new user (user or user)
 exports.register = async (req, res) => {
     const { role, username, email, password, phone } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = role === 'admin' ? await Admin.create({
+        const user = role === 'user' ? await user.create({
             Username: username,
             Email: email,
             Password: hashedPassword,
             Phone: phone,
             Role: role
-        }) : await Customer.create({
+        }) : await user.create({
             Username: username,
             Email: email,
             Password: hashedPassword,
@@ -29,7 +29,7 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
     const { username, password, role } = req.body;
     try {
-        const user = role === 'admin' ? await Admin.findOne({ where: { Username: username } }) : await Customer.findOne({ where: { Username: username } });
+        const user = role === 'user' ? await user.findOne({ where: { Username: username } }) : await user.findOne({ where: { Username: username } });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
