@@ -17,12 +17,25 @@ app.use("/api", routes);
 app.use("/auth", authRoutes); // Use auth routes
 
 // Sync database and start server
-db.sequelize.sync()
-  .then(() => {
+(async () => {
+  try {
+    // Sync Payments table first
+    await db.Payment.sync();
+    console.log('Payments table synced');
+
+    // Sync FinancialReport table
+    await db.FinancialReport.sync();
+    console.log('FinancialReport table synced');
+
+    // Sync TransactionSummary table
+    await db.TransactionSummary.sync();
+    console.log('TransactionSummary table synced');
+
+    // Start the server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
-  })
-  .catch(err => {
+  } catch (err) {
     console.error('Unable to connect to the database:', err);
-  });
+  }
+})();

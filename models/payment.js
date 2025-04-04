@@ -4,25 +4,31 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Payment extends Model {
     static associate(models) {
-      Payment.belongsTo(models.Transaction, {
-        foreignKey: 'TransactionID',
-        as: 'Transaction',
+      Payment.hasMany(models.TransactionSummary, {
+        foreignKey: 'PaymentID',
+        as: 'TransactionSummaries',
       });
     }
   }
 
   Payment.init(
     {
+      PaymentID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true, // Set PaymentID as the primary key
+        autoIncrement: true, // Auto-increment for PaymentID
+      },
       PaymentMethod: {
         type: DataTypes.STRING,
         allowNull: false,
       },
       PaymentDate: {
         type: DataTypes.DATE,
+        allowNull: false,
         defaultValue: DataTypes.NOW,
       },
       Amount: {
-        type: DataTypes.DECIMAL(10, 2),
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
     },
