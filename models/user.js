@@ -4,18 +4,15 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      User.hasMany(models.ActivityLog, {
-        foreignKey: 'AdminID',
-        as: 'ActivityLogs',
-      });
-
+      // Connect User to Orders
       User.hasMany(models.Order, {
-        foreignKey: 'CustomerID',
+        foreignKey: 'UserID', // Use UserID as the foreign key
         as: 'Orders',
       });
 
+      // Connect User to Wishlists
       User.hasMany(models.Wishlist, {
-        foreignKey: 'CustomerID',
+        foreignKey: 'UserID', // Use UserID as the foreign key
         as: 'Wishlists',
       });
     }
@@ -23,6 +20,11 @@ module.exports = (sequelize, DataTypes) => {
 
   User.init(
     {
+      UserID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true, // Set UserID as the primary key
+        autoIncrement: true, // Auto-increment for UserID
+      },
       Username: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -45,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       Role: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING, // Role remains a string
         allowNull: false,
       },
       Address: {

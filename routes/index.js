@@ -10,7 +10,7 @@ const wishlistRoute = require("./wishlistRoutes");
 const transactionRoute = require("./transactionRoutes");
 const paymentRoute = require("./paymentRoutes");
 const supplierRoute = require("./supplierRoutes");
-const activityLogRoute = require("./activityLogRoutes");
+
 
 // Default route
 router.get("/", (req, res) => {
@@ -28,7 +28,6 @@ router.use("/v1/wishlists", wishlistRoute);
 router.use("/v1/transactions", transactionRoute);
 router.use("/v1/payments", paymentRoute);
 router.use("/v1/suppliers", supplierRoute);
-router.use("/v1/activityLogs", activityLogRoute);
 
 // 404 Not Found handler
 router.use((req, res, next) => {
