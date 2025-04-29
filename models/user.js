@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     tableName: 'Users',
-    timestamps: false,
+    timestamps: true, // Ensure timestamps are enabled
   });
 
   User.associate = function(models) {
