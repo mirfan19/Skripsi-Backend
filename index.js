@@ -19,7 +19,11 @@ app.use("/auth", authRoutes); // Use auth routes
 // Sync database and start server
 (async () => {
   try {
-    // Sync Payments table first
+    // Sync Transactions table first
+    await db.Transaction.sync();
+    console.log('Transactions table synced');
+
+    // Sync Payments table
     await db.Payment.sync();
     console.log('Payments table synced');
 

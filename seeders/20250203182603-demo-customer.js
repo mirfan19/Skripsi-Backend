@@ -1,6 +1,6 @@
 'use strict';
 
-const bcrypt = require('bcryptjs'); // Add this line
+const bcrypt = require('bcryptjs');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -13,6 +13,8 @@ module.exports = {
         Address: '123 Main St',
         Role: 'customer',
         RegistrationDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
       {
         Username: 'customer2',
@@ -22,6 +24,8 @@ module.exports = {
         Address: '456 Elm St',
         Role: 'customer',
         RegistrationDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
       },
     ]);
   },
