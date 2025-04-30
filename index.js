@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./models"); // Import the models
 const routes = require("./routes"); // Import the routes
 const authRoutes = require('./routes/authRoutes'); // Import auth routes
+const userRoutes = require('./routes/userRoutes'); // Import user routes
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(bodyParser.json());
 // Use routes
 app.use("/api", routes);
 app.use("/auth", authRoutes); // Use auth routes
+app.use('/v1/users', userRoutes); // Mount user routes
 
 // Sync database and start server
 (async () => {

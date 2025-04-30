@@ -2,6 +2,7 @@
 
 const { User, Product, Order, Wishlist, ActivityLog, Transaction, Payment, Supplier } = require('../models');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Create a new user
 exports.createUser = async (req, res) => {
@@ -84,6 +85,37 @@ exports.deleteUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Login a user
+exports.loginUser = async (req, res) => {
+  try {
+    const { Username, Password } = req.body;
+
+    // Find the user by username
+    const user = await User.findOne({ where: { Username } });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    // Compare the password
+    const isPasswordValid = await bcrypt.compare(Password, user.Password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: user.UserID, role: user.Role }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

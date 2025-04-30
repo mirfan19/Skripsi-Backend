@@ -38,4 +38,7 @@ router.get('/:userId/orders', orderController.getOrderHistory);
 // View wishlist
 router.get('/:userId/wishlist', wishlistController.getAllWishlists);
 
+// Login route
+router.post('/login', userController.loginUser);
+
 module.exports = router;
