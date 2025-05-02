@@ -2,25 +2,25 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('FinancialReports', {
+    await queryInterface.createTable('FinancialReport', {
       ReportID: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      Income: {
+      income: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      Expenses: {
+      expenses: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      GrossRevenue: {
+      gross_revenue: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      NetRevenue: {
+      net_revenue: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
@@ -28,6 +28,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('FinancialReports');
+    await queryInterface.dropTable('FinancialReport');
   },
 };

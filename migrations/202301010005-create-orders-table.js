@@ -9,15 +9,15 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
-      CustomerID: {
+      UserID: { // Updated to UserID
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Customers', // References the Customers table
-          key: 'CustomerID', // Primary key in the Customers table
+          model: 'Users', // Updated to reference Users table
+          key: 'UserID', // Primary key in the Users table
         },
-        onDelete: 'CASCADE', // Deletes orders if the customer is deleted
-        onUpdate: 'CASCADE', // Updates orders if the customer ID changes
+        onDelete: 'CASCADE', // Deletes orders if the user is deleted
+        onUpdate: 'CASCADE', // Updates orders if the user ID changes
       },
       OrderDate: {
         type: Sequelize.DATE,
