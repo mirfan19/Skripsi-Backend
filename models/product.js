@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
 
   Product.init(
     {
+      ProductID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       ProductName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -43,12 +48,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      ImageURL: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
     },
     {
       sequelize,
       modelName: 'Product',
       tableName: 'Products',
-      timestamps: false,
+      timestamps: true,
     }
   );
 

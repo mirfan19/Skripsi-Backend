@@ -2,16 +2,17 @@ const express = require("express");
 const router = express.Router();
 
 // Import route modules
-const userRoute = require("./userRoutes");
-const productRoute = require("./productRoutes");
-const orderRoute = require("./orderRoutes");
-const orderItemRoute = require("./orderItemRoutes");
-const wishlistRoute = require("./wishlistRoutes");
-const transactionRoute = require("./transactionRoutes");
-const paymentRoute = require("./paymentRoutes");
-const supplierRoute = require("./supplierRoutes");
-const transactionSummaryRoute = require("./transactionSummaryRoutes");
-const financialReportRoute = require("./financialReportRoutes");
+const userRoutes = require("./userRoutes");
+const productRoutes = require("./productRoutes");
+const orderRoutes = require("./orderRoutes");
+const orderItemRoutes = require("./orderItemRoutes");
+const wishlistRoutes = require("./wishlistRoutes");
+const transactionRoutes = require("./transactionRoutes");
+const paymentRoutes = require("./paymentRoutes");
+const supplierRoutes = require("./supplierRoutes");
+const transactionSummaryRoutes = require("./transactionSummaryRoutes");
+const financialReportRoutes = require("./financialReportRoutes");
+const authRoutes = require("./authRoutes");
 
 // Default route
 router.get("/", (req, res) => {
@@ -21,16 +22,16 @@ router.get("/", (req, res) => {
 });
 
 // Use route modules
-router.use("/v1/users", userRoute);
-router.use("/v1/products", productRoute);
-router.use("/v1/orders", orderRoute);
-router.use("/v1/orderItems", orderItemRoute);
-router.use("/v1/wishlists", wishlistRoute);
-router.use("/v1/transactions", transactionRoute);
-router.use("/v1/payments", paymentRoute);
-router.use("/v1/suppliers", supplierRoute);
-router.use("/v1/transactionSummaries", transactionSummaryRoute);
-router.use("/v1/financialReports", financialReportRoute);
+router.use("/v1/users", userRoutes);
+router.use("/v1/products", productRoutes);
+router.use("/v1/orders", orderRoutes);
+router.use("/v1/orderItems", orderItemRoutes);
+router.use("/v1/wishlists", wishlistRoutes);
+router.use("/v1/transactions", transactionRoutes);
+router.use("/v1/payments", paymentRoutes);
+router.use("/v1/suppliers", supplierRoutes);
+router.use("/v1/transactionSummaries", transactionSummaryRoutes);
+router.use("/v1/financialReports", financialReportRoutes);
 
 // 404 Not Found handler
 router.use((req, res, next) => {
@@ -50,3 +51,18 @@ router.use((error, req, res, next) => {
 });
 
 module.exports = router;
+
+// Export all routes
+module.exports = {
+    userRoutes,
+    productRoutes,
+    orderRoutes,
+    orderItemRoutes,
+    wishlistRoutes,
+    transactionRoutes,
+    paymentRoutes,
+    supplierRoutes,
+    transactionSummaryRoutes,
+    financialReportRoutes,
+    authRoutes
+};

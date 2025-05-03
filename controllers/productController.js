@@ -1,22 +1,67 @@
 'use strict';
 
 const { Product } = require('../models');
+const { Op } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
-    res.status(201).json(product);
+    const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
+    
+    const productData = {
+      ProductName,
+      Description,
+      Price: parseFloat(Price),
+      StockQuantity: parseInt(StockQuantity),
+      SupplierID: parseInt(SupplierID),
+      ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null
+    };
+
+    const product = await Product.create(productData);
+    
+    res.status(201).json({
+      success: true,
+      data: product
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error creating product:', error);
+    res.status(400).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 };
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
-    res.status(200).json(products);
+    const { search } = req.query;
+    let whereClause = {};
+
+    if (search) {
+      whereClause = {
+        [Op.or]: [
+          { ProductName: { [Op.iLike]: `%${search}%` } },
+          { Description: { [Op.iLike]: `%${search}%` } }
+        ]
+      };
+    }
+
+    const products = await Product.findAll({
+      where: whereClause,
+      attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'StockQuantity', 'ImageURL'],
+      order: [['ProductName', 'ASC']]
+    });
+    
+    res.status(200).json({ 
+      success: true,
+      data: products 
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error in getAllProducts:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch products',
+      message: error.message 
+    });
   }
 };
 
@@ -34,16 +79,42 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const [updated] = await Product.update(req.body, {
-      where: { ProductID: req.params.id },
-    });
-    if (!updated) {
-      return res.status(404).json({ error: 'Product not found' });
+    const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
+    
+    const updateData = {
+      ProductName,
+      Description,
+      Price: parseFloat(Price),
+      StockQuantity: parseInt(StockQuantity),
+      SupplierID: parseInt(SupplierID),
+    };
+
+    if (req.file) {
+      updateData.ImageURL = `/uploads/product/${req.file.filename}`;
     }
+
+    const [updated] = await Product.update(updateData, {
+      where: { ProductID: req.params.id }
+    });
+
+    if (!updated) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Product not found' 
+      });
+    }
+
     const updatedProduct = await Product.findByPk(req.params.id);
-    res.status(200).json(updatedProduct);
+    res.status(200).json({
+      success: true,
+      data: updatedProduct
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error updating product:', error);
+    res.status(400).json({ 
+      success: false, 
+      error: error.message 
+    });
   }
 };
 

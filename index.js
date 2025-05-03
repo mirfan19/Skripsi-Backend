@@ -1,47 +1,50 @@
 const express = require("express");
+const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const db = require("./models"); // Import the models
-const routes = require("./routes"); // Import the routes
-const authRoutes = require('./routes/authRoutes'); // Import auth routes
-const userRoutes = require('./routes/userRoutes'); // Import user routes
+const db = require("./models");
+const routes = require("./routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
-// Use routes
-app.use("/api", routes);
-app.use("/auth", authRoutes); // Use auth routes
-app.use('/v1/users', userRoutes); // Mount user routes
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads/product', express.static(path.join(__dirname, 'uploads/product')));
 
-// Sync database and start server
-(async () => {
-  try {
-    // Sync Transactions table first
-    await db.Transaction.sync();
-    console.log('Transactions table synced');
+// Routes with consistent prefixes
+app.use("/api/products", routes.productRoutes);
+app.use("/api/auth", routes.authRoutes);
+app.use("/api/users", routes.userRoutes);
+app.use("/api/orders", routes.orderRoutes);
+app.use("/api/order-items", routes.orderItemRoutes);
+app.use("/api/wishlists", routes.wishlistRoutes);
+app.use("/api/transactions", routes.transactionRoutes);
+app.use("/api/payments", routes.paymentRoutes);
+app.use("/api/suppliers", routes.supplierRoutes);
 
-    // Sync Payments table
-    await db.Payment.sync();
-    console.log('Payments table synced');
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal Server Error'
+  });
+});
 
-    // Sync FinancialReport table
-    await db.FinancialReport.sync();
-    console.log('FinancialReport table synced');
-
-    // Sync TransactionSummary table
-    await db.TransactionSummary.sync();
-    console.log('TransactionSummary table synced');
-
-    // Start the server
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-  }
-})();
+// Start server with database sync
+db.sequelize.sync().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error('Unable to connect to the database:', err);
+});
