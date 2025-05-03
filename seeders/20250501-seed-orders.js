@@ -2,24 +2,33 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    const users = await queryInterface.sequelize.query(
+      'SELECT "UserID" from "Users";',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    );
+
+    if (users.length === 0) {
+      throw new Error('No users found. Please seed users first.');
+    }
+
     return queryInterface.bulkInsert('Orders', [
       {
-        UserID: 1, // Replace with an existing UserID
+        UserID: users[0].UserID,
         OrderDate: new Date(),
         TotalAmount: 50000.00,
         Status: 'Pending',
       },
       {
-        UserID: 2, // Replace with an existing UserID
+        UserID: users[0].UserID,
         OrderDate: new Date(),
         TotalAmount: 75000.00,
         Status: 'Completed',
       },
       {
-        UserID: 1, // Replace with an existing UserID
+        UserID: users[1].UserID,
         OrderDate: new Date(),
         TotalAmount: 30000.00,
-        Status: 'Cancelled',
+        Status: 'Processing',
       },
     ]);
   },
