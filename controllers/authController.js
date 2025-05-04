@@ -48,9 +48,17 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   try {
-    const user = await User.findOne({ where: { Username: username } });
+    const user = await User.findOne({ 
+      where: { 
+        Username: username  // Changed to match the database column name
+      }
+    });
+    
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found.' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found.' 
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.Password);

@@ -6,27 +6,27 @@ const { Op } = require('sequelize');
 exports.createProduct = async (req, res) => {
   try {
     const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
-    
+
     const productData = {
       ProductName,
       Description,
       Price: parseFloat(Price),
       StockQuantity: parseInt(StockQuantity),
       SupplierID: parseInt(SupplierID),
-      ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null
+      ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null, // Set ImageURL
     };
 
     const product = await Product.create(productData);
-    
+
     res.status(201).json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
     console.error('Error creating product:', error);
-    res.status(400).json({ 
-      success: false, 
-      error: error.message 
+    res.status(400).json({
+      success: false,
+      error: error.message,
     });
   }
 };
@@ -80,7 +80,7 @@ exports.getProductById = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
-    
+
     const updateData = {
       ProductName,
       Description,
@@ -90,30 +90,30 @@ exports.updateProduct = async (req, res) => {
     };
 
     if (req.file) {
-      updateData.ImageURL = `/uploads/product/${req.file.filename}`;
+      updateData.ImageURL = `/uploads/product/${req.file.filename}`; // Update ImageURL
     }
 
     const [updated] = await Product.update(updateData, {
-      where: { ProductID: req.params.id }
+      where: { ProductID: req.params.id },
     });
 
     if (!updated) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Product not found' 
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found',
       });
     }
 
     const updatedProduct = await Product.findByPk(req.params.id);
     res.status(200).json({
       success: true,
-      data: updatedProduct
+      data: updatedProduct,
     });
   } catch (error) {
     console.error('Error updating product:', error);
-    res.status(400).json({ 
-      success: false, 
-      error: error.message 
+    res.status(400).json({
+      success: false,
+      error: error.message,
     });
   }
 };
