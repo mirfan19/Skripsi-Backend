@@ -1,6 +1,6 @@
 'use strict';
 
-const { Wishlist } = require('../models');
+const { Wishlist, Product } = require('../models');
 
 exports.createWishlist = async (req, res) => {
   try {
@@ -58,5 +58,57 @@ exports.deleteWishlist = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.addToWishlist = async (req, res) => {
+  try {
+    const { UserID, ProductID } = req.body;
+
+    // Check if the product is already in the wishlist
+    const existingWishlist = await Wishlist.findOne({
+      where: { UserID, ProductID },
+    });
+
+    if (existingWishlist) {
+      return res.status(400).json({ message: 'Product already in wishlist' });
+    }
+
+    const wishlist = await Wishlist.create({ UserID, ProductID });
+    res.status(201).json({ success: true, data: wishlist });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.getWishlistByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
+    }
+
+    const wishlist = await Wishlist.findAll({
+      where: { UserID: userId },
+      include: [{
+        model: Product,
+        as: 'Product',
+        attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'ImageURL', 'StockQuantity']
+      }]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: wishlist
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
