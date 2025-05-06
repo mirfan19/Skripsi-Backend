@@ -13,6 +13,7 @@ const supplierRoutes = require("./supplierRoutes");
 const transactionSummaryRoutes = require("./transactionSummaryRoutes");
 const financialReportRoutes = require("./financialReportRoutes");
 const authRoutes = require("./authRoutes");
+const cartRoutes = require("./cartRoutes"); // Add this line
 
 // Default route
 router.get("/", (req, res) => {
@@ -64,5 +65,6 @@ module.exports = {
     supplierRoutes,
     transactionSummaryRoutes,
     financialReportRoutes,
-    authRoutes
+    authRoutes,
+    cartRoutes  // Add this line
 };

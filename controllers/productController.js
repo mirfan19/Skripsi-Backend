@@ -1,6 +1,6 @@
 'use strict';
 
-const { Product } = require('../models');
+const { Product, Supplier } = require('../models'); // Add Supplier to the imports
 const { Op } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
@@ -138,5 +138,38 @@ exports.getProductCatalog = async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getProductDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const product = await Product.findOne({
+      where: { ProductID: id },
+      include: [{
+        model: Supplier,
+        as: 'Supplier',
+        attributes: ['SupplierID', 'SupplierName'] // Include SupplierID
+      }]
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: product
+    });
+  } catch (error) {
+    console.error('Error getting product detail:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

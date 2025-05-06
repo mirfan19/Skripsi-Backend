@@ -112,3 +112,33 @@ exports.getWishlistByUser = async (req, res) => {
     });
   }
 };
+
+exports.removeFromWishlist = async (req, res) => {
+  try {
+    const { userId, productId } = req.params;
+
+    const deleted = await Wishlist.destroy({
+      where: { 
+        UserID: userId,
+        ProductID: productId 
+      }
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Wishlist item not found' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Item removed from wishlist'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

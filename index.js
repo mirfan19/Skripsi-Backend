@@ -30,6 +30,7 @@ app.use("/api/wishlists", routes.wishlistRoutes);
 app.use("/api/transactions", routes.transactionRoutes);
 app.use("/api/payments", routes.paymentRoutes);
 app.use("/api/suppliers", routes.supplierRoutes);
+app.use("/api/cart", routes.cartRoutes); // Make sure this line is present
 
 // Error handling middleware
 app.use((err, req, res, next) => {

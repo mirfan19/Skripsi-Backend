@@ -10,6 +10,7 @@ router.put('/:id', upload.single('image'), productController.updateProduct);
 // Public routes
 router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
+router.get('/detail/:id', productController.getProductDetail);
 router.delete('/:id', productController.deleteProduct);
 
 module.exports = router;

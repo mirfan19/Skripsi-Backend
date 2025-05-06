@@ -6,6 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Supplier.hasMany(models.Product, {
         foreignKey: 'SupplierID',
+        sourceKey: 'SupplierID',
         as: 'Products',
       });
     }
@@ -13,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
 
   Supplier.init(
     {
+      SupplierID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       SupplierName: {
         type: DataTypes.STRING,
         allowNull: false,
