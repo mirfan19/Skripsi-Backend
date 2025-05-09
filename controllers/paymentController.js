@@ -1,13 +1,44 @@
 'use strict';
 
-const { Payment } = require('../models');
+const { Payment, Order } = require('../models');
+const db = require('../models');
 
 exports.createPayment = async (req, res) => {
+  const t = await db.sequelize.transaction();
+  
   try {
-    const payment = await Payment.create(req.body);
-    res.status(201).json(payment);
+    const { OrderID, PaymentMethod, Amount, Status } = req.body;
+
+    // Create payment record
+    const payment = await Payment.create({
+      OrderID,
+      PaymentMethod,
+      Amount,
+      Status,
+      PaymentDate: new Date()
+    }, { transaction: t });
+
+    // Update order status
+    await Order.update({
+      Status: 'Paid',
+      PaymentID: payment.PaymentID
+    }, {
+      where: { OrderID },
+      transaction: t
+    });
+
+    await t.commit();
+
+    res.status(201).json({
+      success: true,
+      data: payment
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    await t.rollback();
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -58,5 +89,30 @@ exports.deletePayment = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getPaymentByOrderId = async (req, res) => {
+  try {
+    const payment = await Payment.findOne({
+      where: { OrderID: req.params.orderId }
+    });
+    
+    if (!payment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Payment not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: payment
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

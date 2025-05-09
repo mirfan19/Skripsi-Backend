@@ -1,14 +1,58 @@
 'use strict';
 
-const { Order, OrderItem, Product } = require('../models');
+const { Order, OrderItem, Product, Cart } = require('../models');
+const db = require('../models');
 
 // Create a new order
 exports.createOrder = async (req, res) => {
+  const t = await db.sequelize.transaction();
+
   try {
-    const order = await Order.create(req.body);
-    res.status(201).json(order);
+    const { userId, items, shippingDetails } = req.body;
+
+    // Calculate total amount
+    const totalAmount = items.reduce((sum, item) => {
+      return sum + (item.Product.Price * item.Quantity);
+    }, 0);
+
+    // Create order
+    const order = await Order.create({
+      UserID: userId,
+      TotalAmount: totalAmount,
+      Status: 'Pending',
+      ShippingAddress: shippingDetails.address,
+      ShippingDetails: shippingDetails,
+      OrderDate: new Date()
+    }, { transaction: t });
+
+    // Create order items
+    await Promise.all(items.map(item => {
+      return OrderItem.create({
+        OrderID: order.OrderID,
+        ProductID: item.ProductID,
+        Quantity: item.Quantity,
+        Price: item.Product.Price
+      }, { transaction: t });
+    }));
+
+    // Clear cart
+    await Cart.destroy({
+      where: { UserID: userId },
+      transaction: t
+    });
+
+    await t.commit();
+
+    res.status(201).json({
+      success: true,
+      data: order
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    await t.rollback();
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
