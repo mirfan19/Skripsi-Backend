@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
     static associate(models) {
       Order.belongsTo(models.User, {
-        foreignKey: 'UserID', // Updated to UserID
+        foreignKey: 'UserID',
         as: 'User',
       });
 
@@ -23,7 +23,13 @@ module.exports = (sequelize, DataTypes) => {
 
   Order.init(
     {
-      UserID: { // Updated to UserID
+      OrderID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        field: 'OrderID'
+      },
+      UserID: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },

@@ -9,12 +9,12 @@ router.post('/', orderController.createOrder);
 router.get('/', orderController.getAllOrders);
 
 // Find a single order by ID
-router.get('/:id', orderController.getOrderById);
+router.get('/:OrderID', orderController.getOrderById);  // Changed from :id to :OrderID
 
 // Update an order by ID
-router.put('/:id', orderController.updateOrder);
+router.put('/:OrderID', orderController.updateOrder);   // Changed from :id to :OrderID
 
 // Delete an order by ID
-router.delete('/:id', orderController.deleteOrder);
+router.delete('/:OrderID', orderController.deleteOrder); // Changed from :id to :OrderID
 
 module.exports = router;

@@ -5,39 +5,47 @@ const db = require('../models');
 
 exports.createPayment = async (req, res) => {
   const t = await db.sequelize.transaction();
-  
   try {
     const { OrderID, PaymentMethod, Amount, Status } = req.body;
+
+    // Validate required fields
+    if (!OrderID || !Amount || !PaymentMethod) {
+      return res.status(400).json({
+        success: false,
+        message: "OrderID, Amount, and PaymentMethod are required",
+      });
+    }
 
     // Create payment record
     const payment = await Payment.create({
       OrderID,
       PaymentMethod,
       Amount,
-      Status,
-      PaymentDate: new Date()
+      Status: Status || "Pending",
+      PaymentDate: new Date(),
     }, { transaction: t });
 
     // Update order status
     await Order.update({
-      Status: 'Paid',
-      PaymentID: payment.PaymentID
+      Status: "Processing",
+      PaymentID: payment.PaymentID,
     }, {
       where: { OrderID },
-      transaction: t
+      transaction: t,
     });
 
     await t.commit();
 
     res.status(201).json({
       success: true,
-      data: payment
+      data: payment,
     });
   } catch (error) {
     await t.rollback();
+    console.error("Payment creation error:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };

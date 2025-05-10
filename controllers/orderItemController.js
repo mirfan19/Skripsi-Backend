@@ -22,7 +22,7 @@ exports.getAllOrderItems = async (req, res) => {
 
 exports.getOrderItemById = async (req, res) => {
   try {
-    const orderItem = await OrderItem.findByPk(req.params.id);
+    const orderItem = await OrderItem.findByPk(req.params.OrderItemID);
     if (!orderItem) {
       return res.status(404).json({ error: 'Order Item not found' });
     }
@@ -35,12 +35,12 @@ exports.getOrderItemById = async (req, res) => {
 exports.updateOrderItem = async (req, res) => {
   try {
     const [updated] = await OrderItem.update(req.body, {
-      where: { OrderItemID: req.params.id },
+      where: { OrderItemID: req.params.OrderItemID },
     });
     if (!updated) {
       return res.status(404).json({ error: 'Order Item not found' });
     }
-    const updatedOrderItem = await OrderItem.findByPk(req.params.id);
+    const updatedOrderItem = await OrderItem.findByPk(req.params.OrderItemID);
     res.status(200).json(updatedOrderItem);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -50,7 +50,7 @@ exports.updateOrderItem = async (req, res) => {
 exports.deleteOrderItem = async (req, res) => {
   try {
     const deleted = await OrderItem.destroy({
-      where: { OrderItemID: req.params.id },
+      where: { OrderItemID: req.params.OrderItemID },
     });
     if (!deleted) {
       return res.status(404).json({ error: 'Order Item not found' });
