@@ -8,6 +8,16 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      TransactionID: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'Transactions',
+          key: 'TransactionID'
+        },
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE'
+      },
       OrderID: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -20,11 +30,11 @@ module.exports = {
       },
       PaymentMethod: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: false
       },
       Amount: {
         type: Sequelize.DECIMAL(10, 2),
-        allowNull: false,
+        allowNull: false
       },
       Status: {
         type: Sequelize.STRING,
@@ -55,9 +65,22 @@ module.exports = {
         defaultValue: Sequelize.NOW
       }
     });
+
+    // Add indexes for better performance
+    await queryInterface.addIndex('Payments', ['OrderID']);
+    await queryInterface.addIndex('Payments', ['TransactionID']);
+    await queryInterface.addIndex('Payments', ['Status']);
+    await queryInterface.addIndex('Payments', ['PaymentDate']);
   },
 
   down: async (queryInterface, Sequelize) => {
+    // Remove indexes first
+    await queryInterface.removeIndex('Payments', ['OrderID']);
+    await queryInterface.removeIndex('Payments', ['TransactionID']);
+    await queryInterface.removeIndex('Payments', ['Status']);
+    await queryInterface.removeIndex('Payments', ['PaymentDate']);
+
+    // Then drop the table
     await queryInterface.dropTable('Payments');
-  },
+  }
 };

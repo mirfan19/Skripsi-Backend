@@ -7,17 +7,19 @@ module.exports = (sequelize, DataTypes) => {
       Transaction.belongsTo(models.Order, {
         foreignKey: 'OrderID',
         as: 'Order',
-      });
-
-      Transaction.hasOne(models.Payment, {
-        foreignKey: 'TransactionID',
+      }); Transaction.belongsTo(models.Payment, {
+        foreignKey: 'PaymentID',
         as: 'Payment',
       });
     }
   }
-
   Transaction.init(
     {
+      TransactionID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
       OrderID: {
         type: DataTypes.INTEGER,
         allowNull: false,

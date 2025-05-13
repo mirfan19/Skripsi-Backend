@@ -2,17 +2,26 @@
 
 const { Payment, Order } = require('../models');
 const db = require('../models');
+const snap = require('../config/midtrans');
 
 exports.createPayment = async (req, res) => {
   const t = await db.sequelize.transaction();
   try {
-    const { OrderID, PaymentMethod, Amount, Status } = req.body;
+    const { OrderID, PaymentMethod, Amount } = req.body;
 
-    // Validate required fields
-    if (!OrderID || !Amount || !PaymentMethod) {
+    if (!OrderID || !PaymentMethod || !Amount) {
       return res.status(400).json({
         success: false,
-        message: "OrderID, Amount, and PaymentMethod are required",
+        message: "Missing required fields"
+      });
+    }
+
+    // Get order details
+    const order = await Order.findByPk(OrderID);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found"
       });
     }
 
@@ -20,32 +29,68 @@ exports.createPayment = async (req, res) => {
     const payment = await Payment.create({
       OrderID,
       PaymentMethod,
-      Amount,
-      Status: Status || "Pending",
-      PaymentDate: new Date(),
+      Amount: parseFloat(Amount),
+      Status: "Pending",
+      PaymentDate: new Date()
     }, { transaction: t });
 
-    // Update order status
-    await Order.update({
-      Status: "Processing",
-      PaymentID: payment.PaymentID,
-    }, {
-      where: { OrderID },
-      transaction: t,
-    });
+    // If not cash on delivery, create Midtrans transaction
+    if (PaymentMethod !== "bayar_ditempat") {
+      try {
+        const transactionDetails = {
+          transaction_details: {
+            order_id: `ORDER-${OrderID}-${Date.now()}`,
+            gross_amount: parseInt(Amount)
+          },
+          credit_card: {
+            secure: true
+          },
+          customer_details: {
+            ...order.ShippingDetails
+          }
+        };
+
+        const midtransToken = await snap.createTransaction(transactionDetails);
+
+        // Update payment with Midtrans details
+        await payment.update({
+          PaymentToken: midtransToken.token,
+          MidtransOrderID: transactionDetails.transaction_details.order_id
+        }, { transaction: t });
+
+        await t.commit();
+
+        return res.status(201).json({
+          success: true,
+          data: {
+            PaymentID: payment.PaymentID,
+            token: midtransToken.token
+          }
+        });
+      } catch (midtransError) {
+        await t.rollback();
+        console.error("Midtrans error:", midtransError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to create payment token"
+        });
+      }
+    }
 
     await t.commit();
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      data: payment,
+      data: {
+        PaymentID: payment.PaymentID
+      }
     });
+
   } catch (error) {
     await t.rollback();
     console.error("Payment creation error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message
     });
   }
 };
