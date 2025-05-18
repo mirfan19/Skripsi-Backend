@@ -1,6 +1,7 @@
 'use strict';
 
 const { Transaction } = require('../models');
+const { Sequelize } = require('sequelize');
 
 exports.createTransaction = async (req, res) => {
   try {
@@ -58,5 +59,19 @@ exports.deleteTransaction = async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getTotalSales = async () => {
+  try {
+    const result = await Transaction.findAll({
+      attributes: [
+        [Sequelize.fn('SUM', Sequelize.col('Amount')), 'totalSales']
+      ]
+    });
+    return result[0]?.get('totalSales') || 0;
+  } catch (error) {
+    console.error('Error getting total sales:', error);
+    throw error;
   }
 };

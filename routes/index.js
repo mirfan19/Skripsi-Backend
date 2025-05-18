@@ -13,7 +13,8 @@ const supplierRoutes = require("./supplierRoutes");
 const transactionSummaryRoutes = require("./transactionSummaryRoutes");
 const financialReportRoutes = require("./financialReportRoutes");
 const authRoutes = require("./authRoutes");
-const cartRoutes = require("./cartRoutes"); // Add this line
+const cartRoutes = require("./cartRoutes");
+const adminRoutes = require("./adminRoutes");
 
 // Default route
 router.get("/", (req, res) => {
@@ -33,6 +34,9 @@ router.use("/v1/payments", paymentRoutes);
 router.use("/v1/suppliers", supplierRoutes);
 router.use("/v1/transactionSummaries", transactionSummaryRoutes);
 router.use("/v1/financialReports", financialReportRoutes);
+router.use("/v1/auth", authRoutes);
+router.use("/v1/cart", cartRoutes);
+router.use("/v1/admin", adminRoutes);
 
 // 404 Not Found handler
 router.use((req, res, next) => {
@@ -51,10 +55,9 @@ router.use((error, req, res, next) => {
     });
 });
 
-module.exports = router;
-
-// Export all routes
+// Export the router and all route modules
 module.exports = {
+    router,
     userRoutes,
     productRoutes,
     orderRoutes,
@@ -66,5 +69,6 @@ module.exports = {
     transactionSummaryRoutes,
     financialReportRoutes,
     authRoutes,
-    cartRoutes  // Add this line
+    cartRoutes,
+    adminRoutes
 };

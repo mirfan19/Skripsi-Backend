@@ -26,14 +26,14 @@ exports.register = async (req, res) => {
       Email: email,
       Password: hashedPassword,
       Phone: phone,
-      Role: role,
+      Role: role || 'user', // Default to 'user' if no role specified
     });
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully.',
       data: {
-        id: user.id,
+        id: user.UserID,
         username: user.Username,
         email: user.Email,
         role: user.Role,
@@ -46,27 +46,47 @@ exports.register = async (req, res) => {
 
 // Login a user
 exports.login = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, isAdmin } = req.body;
   try {
-    const user = await User.findOne({ 
-      where: { 
-        Username: username  // Changed to match the database column name
+    // Find user with the specified conditions
+    const user = await User.findOne({
+      where: isAdmin ? { 
+        Username: username, 
+        Role: 'admin'
+      } : { 
+        Username: username 
       }
     });
-    
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(401).json({ 
         success: false, 
-        message: 'User not found.' 
+        message: isAdmin ? 'Invalid admin credentials.' : 'Invalid username or password.' 
       });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.Password);
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Invalid password.' });
+      return res.status(401).json({ 
+        success: false, 
+        message: isAdmin ? 'Invalid admin credentials.' : 'Invalid username or password.'
+      });
     }
 
-    const token = jwt.sign({ id: user.UserID, role: user.Role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // If admin login is requested but user is not an admin
+    if (isAdmin && user.Role !== 'admin') {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You do not have admin privileges.' 
+      });
+    }
+
+    const token = jwt.sign({ 
+      id: user.UserID, 
+      role: user.Role 
+    }, process.env.JWT_SECRET, { 
+      expiresIn: '8h' 
+    });
 
     res.status(200).json({
       success: true,
@@ -83,11 +103,42 @@ exports.login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({ success: false, message: 'An error occurred during login.', error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      message: 'An error occurred during login.', 
+      error: error.message 
+    });
   }
 };
 
 // Logout a user
 exports.logout = (req, res) => {
   res.status(200).json({ success: true, message: 'Logged out successfully.' });
+};
+
+// Check user role
+exports.checkRole = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ where: { UserID: decoded.id } });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        id: user.UserID,
+        role: user.Role,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ success: false, message: 'Invalid token.', error: error.message });
+  }
 };

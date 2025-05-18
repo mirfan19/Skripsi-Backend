@@ -169,3 +169,15 @@ exports.deleteOrder = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getNewOrdersCount = async () => {
+  try {
+    const count = await Order.count({
+      where: { Status: 'Pending' }
+    });
+    return count;
+  } catch (error) {
+    console.error('Error getting new orders count:', error);
+    throw error;
+  }
+};

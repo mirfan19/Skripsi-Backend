@@ -9,6 +9,7 @@ router.put('/:id', upload.single('image'), productController.updateProduct);
 
 // Public routes
 router.get('/', productController.getAllProducts);
+router.get('/barcode/:barcode', productController.getProductByBarcode);
 router.get('/:id', productController.getProductById);
 router.get('/detail/:id', productController.getProductDetail);
 router.delete('/:id', productController.deleteProduct);

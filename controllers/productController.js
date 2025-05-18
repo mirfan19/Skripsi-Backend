@@ -173,3 +173,53 @@ exports.getProductDetail = async (req, res) => {
     });
   }
 };
+
+// Low stock threshold
+const LOW_STOCK_THRESHOLD = 10;
+
+exports.getLowStockCount = async () => {
+  try {
+    const count = await Product.count({
+      where: {
+        StockQuantity: { [Op.lt]: LOW_STOCK_THRESHOLD }
+      }
+    });
+    return count;
+  } catch (error) {
+    console.error('Error getting low stock count:', error);
+    throw error;
+  }
+};
+
+exports.getProductByBarcode = async (req, res) => {
+  try {
+    const { barcode } = req.params;
+    const product = await Product.findOne({
+      where: { ProductID: barcode }, // For now, using ProductID as barcode
+      attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'StockQuantity']
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        id: product.ProductID,
+        name: product.ProductName,
+        price: product.Price,
+        stock: product.StockQuantity
+      }
+    });
+  } catch (error) {
+    console.error('Error getting product by barcode:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

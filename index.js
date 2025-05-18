@@ -3,7 +3,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./models");
-const routes = require("./routes");
+const { router: mainRouter, ...routes } = require("./routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,17 +20,8 @@ app.use(bodyParser.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/product', express.static(path.join(__dirname, 'uploads/product')));
 
-// Routes with consistent prefixes
-app.use("/api/products", routes.productRoutes);
-app.use("/api/auth", routes.authRoutes);
-app.use("/api/users", routes.userRoutes);
-app.use("/api/orders", routes.orderRoutes);
-app.use("/api/order-items", routes.orderItemRoutes);
-app.use("/api/wishlists", routes.wishlistRoutes);
-app.use("/api/transactions", routes.transactionRoutes);
-app.use("/api/payments", routes.paymentRoutes);
-app.use("/api/suppliers", routes.supplierRoutes);
-app.use("/api/cart", routes.cartRoutes); // Make sure this line is present
+// Use main router for all API routes
+app.use("/api", mainRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
