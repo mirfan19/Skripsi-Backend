@@ -116,42 +116,120 @@ exports.getOrderHistory = async (req, res) => {
   }
 };
 
-// Retrieve all orders
+// Get all orders with user details
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.findAll();
+    const { search } = req.query;
+    let whereClause = {};
+      if (search) {
+      whereClause = {
+        [db.Sequelize.Op.or]: [
+          { '$User.Username$': { [db.Sequelize.Op.like]: `%${search}%` } },
+          { OrderID: { [db.Sequelize.Op.eq]: search } }
+        ]
+      };
+    }const orders = await Order.findAll({
+      include: [
+        {
+          model: db.User,
+          as: 'User', // Added the alias here
+          attributes: ['Username']
+        }
+      ],
+      where: whereClause,
+      order: [['OrderDate', 'DESC']]
+    });
+
     res.status(200).json(orders);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error getting orders:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error retrieving orders',
+      error: error.message 
+    });
   }
 };
 
-// Find a single order by OrderID
+// Get order details by ID
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findByPk(req.params.OrderID); // Use OrderID in params
+    const order = await Order.findByPk(req.params.id, {
+      include: [
+        {
+          model: db.User,
+          attributes: ['Username', 'Email', 'Phone']
+        },
+        {
+          model: OrderItem,
+          include: [
+            {
+              model: Product,
+              attributes: ['ProductName', 'Price']
+            }
+          ]
+        }
+      ]
+    });
+
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
     }
+
     res.status(200).json(order);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error getting order details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving order details',
+      error: error.message
+    });
   }
 };
 
-// Update an order by OrderID
+// Update order
 exports.updateOrder = async (req, res) => {
   try {
-    const [updated] = await Order.update(req.body, {
-      where: { OrderID: req.params.OrderID }, // Use OrderID in params
-    });
-    if (!updated) {
-      return res.status(404).json({ error: 'Order not found' });
+    const { status } = req.body;
+    const orderId = req.params.OrderID;
+
+    const order = await Order.findByPk(orderId);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
     }
-    const updatedOrder = await Order.findByPk(req.params.OrderID); // Use OrderID in params
-    res.status(200).json(updatedOrder);
+
+    // Update the order status
+    await order.update({ Status: status });
+
+    // Get the updated order with user information
+    const updatedOrder = await Order.findByPk(orderId, {
+      include: [
+        {
+          model: db.User,
+          attributes: ['Username']
+        }
+      ]
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Order updated successfully',
+      data: updatedOrder
+    });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error updating order:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order',
+      error: error.message
+    });
   }
 };
 

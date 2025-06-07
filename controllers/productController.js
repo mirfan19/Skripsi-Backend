@@ -5,28 +5,43 @@ const { Op } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
   try {
-    const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
 
+    const { ProductName, Description, Price, StockQuantity, Category, SupplierID } = req.body;
+
+    if (!ProductName || !Description || !Price || !StockQuantity || !SupplierID) {
+      return res.status(400).json({
+        success: false,
+        message: 'All required fields must be provided'
+      });
+    }
+    console.log('nih supplier id', SupplierID);
     const productData = {
       ProductName,
       Description,
       Price: parseFloat(Price),
       StockQuantity: parseInt(StockQuantity),
+      Category,
       SupplierID: parseInt(SupplierID),
-      ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null, // Set ImageURL
+      ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null
     };
+
+    console.log('Creating product with data:', productData);
 
     const product = await Product.create(productData);
 
     res.status(201).json({
       success: true,
-      data: product,
+      message: 'Product created successfully',
+      data: product
     });
   } catch (error) {
     console.error('Error creating product:', error);
-    res.status(400).json({
+    res.status(500).json({
       success: false,
-      error: error.message,
+      message: 'Error creating product',
+      error: error.message
     });
   }
 };

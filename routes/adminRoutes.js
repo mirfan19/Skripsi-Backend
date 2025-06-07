@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const isAdmin = require('../middleware/adminMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 const productController = require('../controllers/productController');
 const orderController = require('../controllers/orderController');
 const transactionController = require('../controllers/transactionController');
 const financialReportController = require('../controllers/financialReportController');
+const supplierController = require('../controllers/supplierController');
 
 // Dashboard stats endpoints
 router.get('/stats/total-sales', isAdmin, async (req, res) => {
@@ -36,8 +38,9 @@ router.get('/stats/low-stock', isAdmin, async (req, res) => {
 
 // Product management
 router.get('/products', isAdmin, productController.getAllProducts);
-router.post('/products', isAdmin, productController.createProduct);
-router.put('/products/:id', isAdmin, productController.updateProduct);
+router.post('/products', isAdmin, upload.single('Image'), productController.createProduct);
+router.get('/products/:id', isAdmin, productController.getProductById);
+router.put('/products/:id', isAdmin, upload.single('Image'), productController.updateProduct);
 router.delete('/products/:id', isAdmin, productController.deleteProduct);
 
 // Order management
@@ -47,5 +50,8 @@ router.put('/orders/:id', isAdmin, orderController.updateOrder);
 // Financial reports
 router.get('/financial-reports', isAdmin, financialReportController.getAllFinancialReports);
 router.post('/financial-reports', isAdmin, financialReportController.createFinancialReport);
+
+// Supplier management
+router.get('/suppliers', isAdmin, supplierController.getAllSuppliers);
 
 module.exports = router;
