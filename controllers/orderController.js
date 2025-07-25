@@ -109,8 +109,23 @@ exports.getOrderStatus = async (req, res) => {
 // View order history
 exports.getOrderHistory = async (req, res) => {
   try {
-    const orders = await Order.findAll({ where: { UserID: req.params.UserID } }); // Use UserID for filtering
-    res.status(200).json(orders);
+    const orders = await db.Order.findAll({
+      where: { UserID: req.params.userId },
+      include: [
+        {
+          model: db.OrderItem,
+          as: 'OrderItems',
+          include: [
+            {
+              model: db.Product,
+              as: 'Product',
+              attributes: ['ProductName', 'Price']
+            }
+          ]
+        }
+      ]
+    });
+    res.status(200).json({ success: true, data: orders });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -154,17 +169,20 @@ exports.getAllOrders = async (req, res) => {
 // Get order details by ID
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findByPk(req.params.id, {
+    const order = await db.Order.findByPk(req.params.OrderID, {
       include: [
         {
           model: db.User,
+          as: 'User',
           attributes: ['Username', 'Email', 'Phone']
         },
         {
-          model: OrderItem,
+          model: db.OrderItem,
+          as: 'OrderItems',
           include: [
             {
-              model: Product,
+              model: db.Product,
+              as: 'Product',
               attributes: ['ProductName', 'Price']
             }
           ]
@@ -209,10 +227,11 @@ exports.updateOrder = async (req, res) => {
     await order.update({ Status: status });
 
     // Get the updated order with user information
-    const updatedOrder = await Order.findByPk(orderId, {
+    const updatedOrder = await db.Order.findByPk(orderId, {
       include: [
         {
           model: db.User,
+          as: 'User',
           attributes: ['Username']
         }
       ]

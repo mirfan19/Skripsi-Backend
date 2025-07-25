@@ -2,11 +2,15 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('Users', 'Role', {
-      type: Sequelize.ENUM('admin', 'user'),
-      defaultValue: 'user',
-      allowNull: false
-    });
+    // Only add the column if it does not exist
+    const table = await queryInterface.describeTable('Users');
+    if (!table.Role) {
+      await queryInterface.addColumn('Users', 'Role', {
+        type: Sequelize.ENUM('admin', 'user'),
+        defaultValue: 'user',
+        allowNull: false
+      });
+    }
 
     // Create admin user if it doesn't exist
     const adminUser = await queryInterface.sequelize.query(
@@ -26,6 +30,10 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeColumn('Users', 'Role');
+    // Only remove the column if it exists
+    const table = await queryInterface.describeTable('Users');
+    if (table.Role) {
+      await queryInterface.removeColumn('Users', 'Role');
+    }
   }
 };
