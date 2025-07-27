@@ -1,3 +1,21 @@
+const { Transaction } = require('../models');
+const { Sequelize } = require('sequelize');
+// GET /admin/financial-report/monthly
+exports.getMonthlyIncome = async (req, res) => {
+  // Dummy data for testing
+  return res.json({
+    success: true,
+    data: [
+      { month: '2025-01', income: 1000000 },
+      { month: '2025-02', income: 1200000 },
+      { month: '2025-03', income: 900000 },
+      { month: '2025-04', income: 1500000 },
+      { month: '2025-05', income: 1100000 },
+      { month: '2025-06', income: 1700000 },
+      { month: '2025-07', income: 1300000 }
+    ]
+  });
+};
 'use strict';
 
 const { FinancialReport } = require('../models');

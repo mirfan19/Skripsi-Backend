@@ -94,41 +94,83 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
+    console.log('Updating product with ID:', req.params.id);
+    console.log('Request body:', req.body);
+    console.log('File:', req.file);
+
+    // Validate required fields
     const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
+    
+    if (!ProductName || !Description || !Price || !StockQuantity || !SupplierID) {
+      return res.status(400).json({
+        success: false,
+        message: 'All required fields must be provided'
+      });
+    }
+
+    // Validate numeric fields
+    const price = parseFloat(Price);
+    const stockQuantity = parseInt(StockQuantity);
+    const supplierId = parseInt(SupplierID);
+
+    if (isNaN(price) || price < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid price value'
+      });
+    }
+
+    if (isNaN(stockQuantity) || stockQuantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid stock quantity value'
+      });
+    }
 
     const updateData = {
       ProductName,
       Description,
-      Price: parseFloat(Price),
-      StockQuantity: parseInt(StockQuantity),
-      SupplierID: parseInt(SupplierID),
+      Price: price,
+      StockQuantity: stockQuantity,
+      SupplierID: supplierId
     };
 
     if (req.file) {
-      updateData.ImageURL = `/uploads/product/${req.file.filename}`; // Update ImageURL
+      updateData.ImageURL = `/uploads/product/${req.file.filename}`;
+      console.log('New image path:', updateData.ImageURL);
     }
 
-    const [updated] = await Product.update(updateData, {
-      where: { ProductID: req.params.id },
-    });
+    console.log('Update data:', updateData);
 
-    if (!updated) {
+    // First check if product exists
+    const existingProduct = await Product.findByPk(req.params.id);
+    if (!existingProduct) {
       return res.status(404).json({
         success: false,
-        error: 'Product not found',
+        message: 'Product not found'
       });
     }
 
+    // Update the product
+    await Product.update(updateData, {
+      where: { ProductID: req.params.id }
+    });
+
+    // Fetch updated product
     const updatedProduct = await Product.findByPk(req.params.id);
+    console.log('Product updated successfully:', updatedProduct);
+
     res.status(200).json({
       success: true,
-      data: updatedProduct,
+      message: 'Product updated successfully',
+      data: updatedProduct
     });
   } catch (error) {
     console.error('Error updating product:', error);
-    res.status(400).json({
+    res.status(500).json({
       success: false,
-      error: error.message,
+      message: 'An error occurred while updating the product',
+      error: error.message
     });
   }
 };

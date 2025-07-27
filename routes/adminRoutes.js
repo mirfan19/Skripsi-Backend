@@ -38,9 +38,9 @@ router.get('/stats/low-stock', isAdmin, async (req, res) => {
 
 // Product management
 router.get('/products', isAdmin, productController.getAllProducts);
-router.post('/products', isAdmin, upload.single('Image'), productController.createProduct);
+router.post('/products', isAdmin, upload.single('image'), productController.createProduct);
 router.get('/products/:id', isAdmin, productController.getProductById);
-router.put('/products/:id', isAdmin, upload.single('Image'), productController.updateProduct);
+router.put('/products/:id', isAdmin, upload.single('image'), productController.updateProduct);
 router.delete('/products/:id', isAdmin, productController.deleteProduct);
 
 // Order management

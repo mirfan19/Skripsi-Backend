@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+
 const financialReportController = require('../controllers/financialReportController');
+// Monthly income report for chart
+router.get('/monthly', financialReportController.getMonthlyIncome);
 
 router.post('/', financialReportController.createFinancialReport);
 router.get('/', financialReportController.getAllFinancialReports);
