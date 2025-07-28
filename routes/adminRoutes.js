@@ -9,14 +9,7 @@ const financialReportController = require('../controllers/financialReportControl
 const supplierController = require('../controllers/supplierController');
 
 // Dashboard stats endpoints
-router.get('/stats/total-sales', isAdmin, async (req, res) => {
-  try {
-    const total = await transactionController.getTotalSales();
-    res.json({ total });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
+router.get('/stats/total-sales', isAdmin, transactionController.getTotalSales);
 
 router.get('/stats/new-orders', isAdmin, async (req, res) => {
   try {

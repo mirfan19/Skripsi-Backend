@@ -1,7 +1,7 @@
 'use strict';
 
-const { Transaction } = require('../models');
-const { Sequelize } = require('sequelize');
+const { Transaction, Order } = require('../models');
+const { Op } = require('sequelize');
 
 exports.createTransaction = async (req, res) => {
   try {
@@ -62,16 +62,20 @@ exports.deleteTransaction = async (req, res) => {
   }
 };
 
-exports.getTotalSales = async () => {
+exports.getTotalSales = async (req, res) => {
   try {
-    const result = await Transaction.findAll({
-      attributes: [
-        [Sequelize.fn('SUM', Sequelize.col('Amount')), 'totalSales']
-      ]
+    // Pastikan field sesuai dengan database!
+    const totalTransactions = await Transaction.sum('Amount');
+
+    const totalOrders = await Order.sum('TotalAmount', {
+      where: { Status: { [Op.in]: ['Selesai', 'success', 'Checked Out'] } }
     });
-    return result[0]?.get('totalSales') || 0;
+
+    const total = (totalTransactions || 0) + (totalOrders || 0);
+
+    res.json({ total });
   } catch (error) {
-    console.error('Error getting total sales:', error);
-    throw error;
+    console.error(error); // Tambahkan log ini untuk cek error detail di terminal
+    res.status(500).json({ message: error.message });
   }
 };

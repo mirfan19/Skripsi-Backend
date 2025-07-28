@@ -15,6 +15,7 @@ const financialReportRoutes = require("./financialReportRoutes");
 const authRoutes = require("./authRoutes");
 const cartRoutes = require("./cartRoutes");
 const adminRoutes = require("./adminRoutes");
+const monthlyReportRoutes = require("./monthlyReportRoutes");
 
 // Default route
 router.get("/", (req, res) => {
@@ -34,6 +35,7 @@ router.use("/v1/payments", paymentRoutes);
 router.use("/v1/suppliers", supplierRoutes);
 router.use("/v1/transactionSummaries", transactionSummaryRoutes);
 router.use("/v1/financialReports", financialReportRoutes);
+router.use("/v1/monthlyReports", monthlyReportRoutes);
 router.use("/v1/auth", authRoutes);
 router.use("/v1/cart", cartRoutes);
 router.use("/v1/admin", adminRoutes);
@@ -70,5 +72,6 @@ module.exports = {
     financialReportRoutes,
     authRoutes,
     cartRoutes,
-    adminRoutes
+    adminRoutes,
+    monthlyReportRoutes
 };

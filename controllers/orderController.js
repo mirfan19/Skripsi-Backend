@@ -7,7 +7,7 @@ const db = require('../models');
 exports.createOrder = async (req, res) => {
   const t = await db.sequelize.transaction();
   try {
-    const { UserID, OrderItems, ShippingDetails, TotalAmount } = req.body;
+    const { UserID, OrderItems, ShippingDetails, TotalAmount, Status } = req.body;
 
     if (!UserID || !TotalAmount || !ShippingDetails) {
       return res.status(400).json({
@@ -16,44 +16,58 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const order = await Order.create({
-      UserID,
-      ShippingDetails,
-      TotalAmount,
-      Status: "Pending",
-      OrderDate: new Date(),
-    }, { transaction: t });
+    // 1. Buat order baru
+    const order = await db.Order.create(
+      {
+        UserID,
+        ShippingDetails,
+        TotalAmount,
+        Status,
+      },
+      { transaction: t }
+    );
 
-    // Use OrderItemID instead of id
-    if (OrderItems && OrderItems.length > 0) {
-      await OrderItem.bulkCreate(
-        OrderItems.map(item => ({
+    // 2. Proses setiap item order
+    for (const item of OrderItems) {
+      // Cari produk
+      const product = await db.Product.findByPk(item.ProductID, { transaction: t });
+      if (!product) {
+        await t.rollback();
+        return res.status(404).json({ success: false, message: `Product ID ${item.ProductID} not found` });
+      }
+      // Cek stok cukup
+      if (product.StockQuantity < item.Quantity) {
+        await t.rollback();
+        return res.status(400).json({ success: false, message: `Stok produk ${product.ProductName} tidak cukup` });
+      }
+      // Kurangi stok
+      product.StockQuantity -= item.Quantity;
+      await product.save({ transaction: t });
+
+      // Tambahkan ke OrderItem
+      await db.OrderItem.create(
+        {
           OrderID: order.OrderID,
           ProductID: item.ProductID,
           Quantity: item.Quantity,
-          Price: item.Price
-        })),
+          Price: item.Price,
+        },
         { transaction: t }
       );
     }
 
     await t.commit();
-
     res.status(201).json({
       success: true,
-      data: { 
+      data: {
         orderId: order.OrderID,
         totalAmount: order.TotalAmount,
-        status: order.Status
-      }
+        status: order.Status,
+      },
     });
   } catch (error) {
     await t.rollback();
-    console.error("Order creation error:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

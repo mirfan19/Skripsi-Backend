@@ -23,6 +23,7 @@ module.exports = {
       throw new Error('No products found. Please seed products first.');
     }
 
+    await queryInterface.bulkDelete('OrderItems', null, { restartIdentity: true });
     return queryInterface.bulkInsert('OrderItems', [
       {
         OrderID: orders[0].OrderID,

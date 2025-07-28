@@ -2,6 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    await queryInterface.bulkDelete('Products', null, {}); // Hapus data child dulu
+    await queryInterface.bulkDelete('Suppliers', null, { restartIdentity: true });
     return queryInterface.bulkInsert('Suppliers', [
       {
         SupplierID: 1,
