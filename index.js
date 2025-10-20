@@ -4,9 +4,22 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const db = require("./models");
 const { router: mainRouter, ...routes } = require("./routes");
+const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // from Supabase
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+pool.connect()
+  .then(() => console.log("Connected to Supabase PostgreSQL 🚀"))
+  .catch(err => console.error("Connection error", err.stack));
 
 // CORS configuration
 app.use(cors({
@@ -40,3 +53,5 @@ db.sequelize.sync().then(() => {
 }).catch(err => {
   console.error('Unable to connect to the database:', err);
 });
+
+module.exports = pool;

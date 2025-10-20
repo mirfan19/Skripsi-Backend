@@ -1,39 +1,38 @@
 'use strict';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    const users = await queryInterface.sequelize.query(
-      'SELECT "UserID" from "Users";',
-      { type: queryInterface.sequelize.QueryTypes.SELECT }
-    );
+  async up(queryInterface, Sequelize) {
+    const now = new Date();
 
-    if (users.length === 0) {
-      throw new Error('No users found. Please seed users first.');
+    // pastikan ada user dulu
+    const [users] = await queryInterface.sequelize.query(
+      `SELECT "UserID" FROM "Users" ORDER BY "UserID" ASC`
+    );
+    if (!users || users.length === 0) {
+      console.warn('Seed orders skipped: no users found. Seed users first.');
+      return;
     }
 
-    return queryInterface.bulkInsert('Orders', [
-      {
-        UserID: users[0].UserID,
-        OrderDate: new Date(),
-        TotalAmount: 50000.00,
-        Status: 'Pending',
-      },
-      {
-        UserID: users[0].UserID,
-        OrderDate: new Date(),
-        TotalAmount: 75000.00,
-        Status: 'Completed',
-      },
-      {
-        UserID: users[1].UserID,
-        OrderDate: new Date(),
-        TotalAmount: 30000.00,
-        Status: 'Processing',
-      },
-    ]);
+    // cek apakah tabel Orders punya createdAt/updatedAt
+    const tableInfo = await queryInterface.describeTable('Orders').catch(() => null);
+    const includeTimestamps = tableInfo && (tableInfo.createdAt || tableInfo.updatedAt);
+
+    const baseOrder = {
+      UserID: users[0].UserID,
+      OrderDate: now,
+      TotalAmount: 150000,
+      Status: 'Paid'
+    };
+
+    if (includeTimestamps) {
+      baseOrder.createdAt = now;
+      baseOrder.updatedAt = now;
+    }
+
+    await queryInterface.bulkInsert('Orders', [ baseOrder ], {});
   },
 
-  down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('Orders', null, {});
-  },
+  async down(queryInterface /* Sequelize */) {
+    await queryInterface.bulkDelete('Orders', { TotalAmount: 150000 }, {});
+  }
 };

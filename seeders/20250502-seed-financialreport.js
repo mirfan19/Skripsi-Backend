@@ -2,13 +2,25 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // 1. Tambahkan kolom date yang nullable
-    await queryInterface.addColumn('FinancialReport', 'date', {
-      type: Sequelize.DATEONLY,
-      allowNull: true,
-    });
+    // safe check: table exists?
+    const table = await queryInterface.describeTable('FinancialReport').catch(() => null);
+    if (!table) {
+      console.warn('Seed skipped: "FinancialReport" table not found.');
+      return;
+    }
 
-    return queryInterface.bulkInsert('FinancialReport', [
+    // add column only if missing (but note: schema changes should preferably be in a migration)
+    if (!table.date) {
+      await queryInterface.addColumn('FinancialReport', 'date', {
+        type: Sequelize.DATEONLY,
+        allowNull: true,
+      }).catch(err => {
+        console.warn('Add column skipped or failed:', err.message || err);
+      });
+    }
+
+    const now = new Date();
+    const rows = [
       {
         income: 1000000.00,
         expenses: 400000.00,
@@ -30,16 +42,29 @@ module.exports = {
         net_revenue: 900000.00,
         date: '2024-07-24',
       },
-    ]);
+    ];
+
+    // include timestamps only if table has them
+    if (table.createdAt || table.updatedAt) {
+      rows.forEach(r => {
+        r.createdAt = now;
+        r.updatedAt = now;
+      });
+    }
+
+    return queryInterface.bulkInsert('FinancialReport', rows, {});
   },
 
   down: async (queryInterface, Sequelize) => {
-    // 3. Ubah kolom jadi NOT NULL
-    await queryInterface.changeColumn('FinancialReport', 'date', {
-      type: Sequelize.DATEONLY,
-      allowNull: false,
-    });
-
-    return queryInterface.bulkDelete('FinancialReport', null, {});
-  },
+    // remove only the seeded rows (safe) — do NOT change schema in seeder down
+    const Op = Sequelize.Op;
+    return queryInterface.bulkDelete(
+      'FinancialReport',
+      {
+        date: '2024-07-24',
+        income: { [Op.in]: [1000000.00, 2000000.00, 1500000.00] }
+      },
+      {}
+    );
+  }
 };

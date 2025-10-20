@@ -11,12 +11,6 @@ module.exports = {
       TransactionID: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: {
-          model: 'Transactions',
-          key: 'TransactionID'
-        },
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
       },
       OrderID: {
         type: Sequelize.INTEGER,
@@ -68,7 +62,7 @@ module.exports = {
 
     // Add indexes for better performance
     await queryInterface.addIndex('Payments', ['OrderID']);
-    await queryInterface.addIndex('Payments', ['TransactionID']);
+ 
     await queryInterface.addIndex('Payments', ['Status']);
     await queryInterface.addIndex('Payments', ['PaymentDate']);
   },
@@ -76,7 +70,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     // Remove indexes first
     await queryInterface.removeIndex('Payments', ['OrderID']);
-    await queryInterface.removeIndex('Payments', ['TransactionID']);
+
     await queryInterface.removeIndex('Payments', ['Status']);
     await queryInterface.removeIndex('Payments', ['PaymentDate']);
 
