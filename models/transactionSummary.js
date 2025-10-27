@@ -27,13 +27,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       PaymentID: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true, // <-- ensure this is true
         references: {
           model: 'Payments',
           key: 'PaymentID',
         },
-        onDelete: 'CASCADE', // Add CASCADE delete
-        onUpdate: 'CASCADE', // Add CASCADE update
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE',
       },
       ReportID: {
         type: DataTypes.INTEGER,
@@ -59,10 +59,10 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     {
-        sequelize,
-        modelName: 'TransactionSummary',
-        tableName: 'TransactionSummary',
-        timestamps: false,
+      sequelize,
+      modelName: 'TransactionSummary',
+      tableName: 'TransactionSummary',
+      timestamps: false,
     }
   );
 
