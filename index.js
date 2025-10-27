@@ -1,25 +1,31 @@
+'use strict';
+
 const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+require('dotenv').config(); // safe: no-op on Vercel if you rely on env vars
 const db = require("./models");
-const { router: mainRouter, ...routes } = require("./routes");
+const { router: mainRouter } = require("./routes");
 const { Pool } = require("pg");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // from Supabase
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+// PostgreSQL connection pool (only if DATABASE_URL provided)
+let pool;
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+  });
 
-pool.connect()
-  .then(() => console.log("Connected to Supabase PostgreSQL 🚀"))
-  .catch(err => console.error("Connection error", err.stack));
+  pool.connect()
+    .then(() => console.log("Connected to Supabase PostgreSQL 🚀"))
+    .catch(err => console.error("Connection error", err.stack));
+} else {
+  console.warn('No DATABASE_URL provided — skipping direct pg Pool connection.');
+}
 
 // CORS configuration
 app.use(cors({
@@ -28,15 +34,10 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
-
-// Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/product', express.static(path.join(__dirname, 'uploads/product')));
-
-// Use main router for all API routes
 app.use("/api", mainRouter);
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({
@@ -45,13 +46,33 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server with database sync
-db.sequelize.sync().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error('Unable to connect to the database:', err);
-});
+// Start server safely: authenticate in production, run sync only in development
+async function startServer() {
+  try {
+    if (db && db.sequelize) {
+      if (process.env.NODE_ENV === 'production') {
+        // do NOT run sync in production on Vercel; just authenticate
+        await db.sequelize.authenticate();
+        console.log('Database authenticated (production).');
+      } else {
+        // development: sync models (safe locally)
+        await db.sequelize.sync();
+        console.log('Database synced (development).');
+      }
+    } else {
+      console.warn('DB object or sequelize not available — skipping DB sync/authenticate.');
+    }
+
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Unable to connect to the database:', err);
+    // Exit so Vercel/PM2/Container sees failure (optional)
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = pool;
