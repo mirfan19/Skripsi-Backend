@@ -4,6 +4,7 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const serverless = require('serverless-http');
 require('dotenv').config();
 
 // quick guard: require DATABASE_URL or DB_HOST before attempting DB connect
@@ -55,33 +56,26 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server safely: authenticate in production, run sync only in development
-async function startServer() {
-  try {
-    if (db && db.sequelize) {
-      if (process.env.NODE_ENV === 'production') {
-        // do NOT run sync in production on Vercel; just authenticate
-        await db.sequelize.authenticate();
-        console.log('Database authenticated (production).');
-      } else {
-        // development: sync models (safe locally)
-        await db.sequelize.sync();
-        console.log('Database synced (development).');
+// export serverless handler for Vercel
+if (process.env.VERCEL) {
+  module.exports = serverless(app);
+} else {
+  // start normal server locally / in non-vercel env
+  (async function start() {
+    try {
+      if (db && db.sequelize) {
+        if (process.env.NODE_ENV === 'production') {
+          await db.sequelize.authenticate();
+        } else {
+          await db.sequelize.sync();
+        }
       }
-    } else {
-      console.warn('DB object or sequelize not available — skipping DB sync/authenticate.');
+      app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+      });
+    } catch (err) {
+      console.error('Unable to connect to the database:', err);
+      process.exit(1);
     }
-
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-    // Exit so Vercel/PM2/Container sees failure (optional)
-    process.exit(1);
-  }
+  })();
 }
-
-startServer();
-
-module.exports = pool;
