@@ -47,7 +47,10 @@ if (config.use_env_variable) {
     dialect: 'postgres',
     protocol: 'postgres',
     logging: false,
-    dialectOptions: process.env.DB_SSL === 'disable' ? {} : { ssl: { rejectUnauthorized: false } },
+    dialectOptions: {
+    ssl: { rejectUnauthorized: false },
+    family: 4,   // <--- forces IPv4 (extra safety)
+},
   });
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, {
@@ -55,7 +58,10 @@ if (config.use_env_variable) {
     port: config.port || 5432,
     dialect: config.dialect || 'postgres',
     logging: false,
-    dialectOptions: process.env.DB_SSL === 'disable' ? {} : { ssl: { rejectUnauthorized: false } },
+    dialectOptions: {
+    ssl: { rejectUnauthorized: false },
+    family: 4,   // <--- forces IPv4 (extra safety)
+  },
   });
 }
 
