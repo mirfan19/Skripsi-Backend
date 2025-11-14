@@ -13,7 +13,7 @@ try {
 }
 require('dotenv').config();
 
-// quick guard: require DATABASE_URL or DB_HOST before attempting DB connect
+// quick guard:     require DATABASE_URL or DB_HOST before attempting DB connect
 const dbHost = process.env.DATABASE_URL || process.env.DB_HOST;
 if (!dbHost) {
   // clear message so Vercel logs show why it failed
