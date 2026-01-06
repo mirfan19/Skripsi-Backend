@@ -41,6 +41,7 @@ if (!config) {
 }
 
 let sequelize;
+const sslOption = process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false };
 if (config.use_env_variable) {
   const connString = process.env[config.use_env_variable] || process.env.DATABASE_URL;
   sequelize = new Sequelize(connString, {
@@ -48,9 +49,9 @@ if (config.use_env_variable) {
     protocol: 'postgres',
     logging: false,
     dialectOptions: {
-    ssl: { rejectUnauthorized: false },
-    family: 4,   // <--- forces IPv4 (extra safety)
-},
+      ssl: sslOption,
+      family: 4,   // <--- forces IPv4 (extra safety)
+    },
   });
 } else {
   sequelize = new Sequelize(config.database, config.username, config.password, {
@@ -59,9 +60,9 @@ if (config.use_env_variable) {
     dialect: config.dialect || 'postgres',
     logging: false,
     dialectOptions: {
-    ssl: { rejectUnauthorized: false },
-    family: 4,   // <--- forces IPv4 (extra safety)
-  },
+      ssl: sslOption,
+      family: 4,   // <--- forces IPv4 (extra safety)
+    },
   });
 }
 

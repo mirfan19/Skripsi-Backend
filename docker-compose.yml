@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: npm run dev
+    command: npm start
     environment:
       DB_USERNAME: postgres
       DB_PASSWORD: rwabIEaTLtb8GKhz
