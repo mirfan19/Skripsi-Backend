@@ -48,6 +48,14 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    // Drop FK di OrderItems jika ada
+    try {
+      await queryInterface.removeConstraint('OrderItems', 'OrderItems_ProductID_fkey');
+    } catch (e) {}
+    // Drop FK di Wishlists jika ada
+    try {
+      await queryInterface.removeConstraint('Wishlists', 'Wishlists_ProductID_fkey');
+    } catch (e) {}
     await queryInterface.dropTable('Products');
   },
 };

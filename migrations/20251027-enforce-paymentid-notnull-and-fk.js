@@ -15,12 +15,19 @@ module.exports = {
     await queryInterface.sequelize.query(`ALTER TABLE "TransactionSummary" ALTER COLUMN "PaymentID" SET NOT NULL;`);
 
     // add FK constraint if not exists
-    await queryInterface.sequelize.query(`
-      ALTER TABLE "TransactionSummary"
-      ADD CONSTRAINT transactionsummary_paymentid_fkey
-      FOREIGN KEY ("PaymentID") REFERENCES "Payments"("PaymentID")
-      ON DELETE CASCADE ON UPDATE CASCADE;
+    // Add FK constraint only if not exists
+    const [results] = await queryInterface.sequelize.query(`
+      SELECT constraint_name FROM information_schema.table_constraints
+      WHERE table_name = 'TransactionSummary' AND constraint_type = 'FOREIGN KEY' AND constraint_name = 'transactionsummary_paymentid_fkey';
     `);
+    if (!results || results.length === 0) {
+      await queryInterface.sequelize.query(`
+        ALTER TABLE "TransactionSummary"
+        ADD CONSTRAINT transactionsummary_paymentid_fkey
+        FOREIGN KEY ("PaymentID") REFERENCES "Payments"("PaymentID")
+        ON DELETE CASCADE ON UPDATE CASCADE;
+      `);
+    }
   },
 
   down: async (queryInterface /* Sequelize */) => {

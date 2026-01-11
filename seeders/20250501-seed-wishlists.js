@@ -16,31 +16,47 @@ module.exports = {
 
     // Check if we have both users and products
     if (users.length === 0 || products.length === 0) {
-      throw new Error('Users or Products not found. Please seed users and products first.');
+      console.warn('Users or Products not found. Please seed users and products first.');
+      return;
     }
 
-    return queryInterface.bulkInsert('Wishlists', [
-      {
-        UserID: users[0].UserID,  // admin user (UserID: 1)
-        ProductID: products[0].ProductID,  // Pensil 2B
+    // Build wishlists only for available users/products
+    const wishlists = [];
+    if (users[0] && products[0]) {
+      wishlists.push({
+        UserID: users[0].UserID,
+        ProductID: products[0].ProductID,
         AddedDate: new Date(),
-      },
-      {
-        UserID: users[1].UserID,  // user1 (UserID: 2)
-        ProductID: products[1].ProductID,  // Buku Tulis
+      });
+    }
+    if (users[1] && products[1]) {
+      wishlists.push({
+        UserID: users[1].UserID,
+        ProductID: products[1].ProductID,
         AddedDate: new Date(),
-      },
-      {
-        UserID: users[1].UserID,  // user1 (UserID: 2)
-        ProductID: products[2].ProductID,  // Pulpen Hitam
+      });
+    }
+    if (users[1] && products[2]) {
+      wishlists.push({
+        UserID: users[1].UserID,
+        ProductID: products[2].ProductID,
         AddedDate: new Date(),
-      },
-      {
-        UserID: users[2].UserID,  // user2 (UserID: 3)
-        ProductID: products[0].ProductID,  // Pensil 2B
+      });
+    }
+    if (users[2] && products[0]) {
+      wishlists.push({
+        UserID: users[2].UserID,
+        ProductID: products[0].ProductID,
         AddedDate: new Date(),
-      }
-    ]);
+      });
+    }
+
+    if (wishlists.length > 0) {
+      return queryInterface.bulkInsert('Wishlists', wishlists);
+    } else {
+      console.warn('No wishlists inserted: not enough users or products.');
+      return;
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

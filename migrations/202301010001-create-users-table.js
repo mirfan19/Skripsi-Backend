@@ -49,6 +49,10 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    // Drop FK di Wishlists jika ada
+    try {
+      await queryInterface.removeConstraint('Wishlists', 'Wishlists_UserID_fkey');
+    } catch (e) {}
     await queryInterface.dropTable('Users');
   }
 };

@@ -70,9 +70,16 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     // Remove indexes first
     await queryInterface.removeIndex('Payments', ['OrderID']);
-
     await queryInterface.removeIndex('Payments', ['Status']);
     await queryInterface.removeIndex('Payments', ['PaymentDate']);
+
+    // Drop FK di Transactions dan TransactionSummary jika ada
+    try {
+      await queryInterface.removeConstraint('Transactions', 'Transactions_PaymentID_fkey');
+    } catch (e) {}
+    try {
+      await queryInterface.removeConstraint('TransactionSummary', 'transactionsummary_paymentid_fkey');
+    } catch (e) {}
 
     // Then drop the table
     await queryInterface.dropTable('Payments');

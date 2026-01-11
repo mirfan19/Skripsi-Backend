@@ -122,18 +122,34 @@ module.exports = {
     const sumHas = (n) => sumColNames.includes(n.toLowerCase());
     const sumNeedsTimestamps = !!(sumHas('createdat') || sumHas('updatedat'));
 
+    // Fetch available PaymentIDs
+    const paymentRows = await queryInterface.sequelize.query(
+      'SELECT "PaymentID" FROM "Payments" ORDER BY "PaymentID" ASC;',
+      { type: queryInterface.sequelize.QueryTypes.SELECT }
+    ).catch(() => []);
+
     const summaryRows = [];
-    // create a few summary rows referencing available ReportIDs (or null if none)
+    // create summary rows referencing available ReportIDs and PaymentIDs only if both exist
     for (let i = 0; i < 3; i++) {
-      const row = {};
-      if (sumHas('paymentid')) row.PaymentID = null;
-      if (sumHas('reportid')) row.ReportID = reportIds[i] || reportIds[0] || null;
-      if (sumHas('transactiondate')) row.TransactionDate = new Date(`2025-07-${10 + i}`);
-      // amount could be named Amount or amount
-      if (sumHas('amount')) row.Amount = [5000000, 5000000, 8000000][i % 3];
-      if (sumHas('transactiontype')) row.TransactionType = i === 2 ? 'Income' : 'Income';
-      if (sumNeedsTimestamps) { row.createdAt = now; row.updatedAt = now; }
-      summaryRows.push(row);
+      if (sumHas('paymentid') && paymentRows[i] && paymentRows[i].PaymentID != null && (reportIds[i] || reportIds[0])) {
+        const row = {};
+        row.PaymentID = paymentRows[i].PaymentID;
+        if (sumHas('reportid')) row.ReportID = reportIds[i] || reportIds[0] || null;
+        if (sumHas('transactiondate')) row.TransactionDate = new Date(`2025-07-${10 + i}`);
+        if (sumHas('amount')) row.Amount = [5000000, 5000000, 8000000][i % 3];
+        if (sumHas('transactiontype')) row.TransactionType = 'Income';
+        if (sumNeedsTimestamps) { row.createdAt = now; row.updatedAt = now; }
+        summaryRows.push(row);
+      } else if (!sumHas('paymentid') && (reportIds[i] || reportIds[0])) {
+        // If PaymentID is not required, still insert
+        const row = {};
+        if (sumHas('reportid')) row.ReportID = reportIds[i] || reportIds[0] || null;
+        if (sumHas('transactiondate')) row.TransactionDate = new Date(`2025-07-${10 + i}`);
+        if (sumHas('amount')) row.Amount = [5000000, 5000000, 8000000][i % 3];
+        if (sumHas('transactiontype')) row.TransactionType = 'Income';
+        if (sumNeedsTimestamps) { row.createdAt = now; row.updatedAt = now; }
+        summaryRows.push(row);
+      }
     }
 
     // if summaryRows have at least one key, insert

@@ -44,7 +44,7 @@ if (process.env.DATABASE_URL) {
 
 // CORS configuration
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: true, // allow all origins
   credentials: true
 }));
 

@@ -32,21 +32,28 @@ module.exports = {
 
     const rows = [];
     for (let i = 0; i < count; i++) {
-      const r = {
-        ReportID: reports[i].ReportID,
-        PaymentID: payments[i].PaymentID,
-        TransactionDate: now,
-        Amount: amountSamples[i % amountSamples.length],
-        TransactionType: typeSamples[i % typeSamples.length],
-      };
-      if (needsTimestamps) {
-        r.createdAt = now;
-        r.updatedAt = now;
+      if (reports[i] && payments[i] && payments[i].PaymentID != null) {
+        const r = {
+          ReportID: reports[i].ReportID,
+          PaymentID: payments[i].PaymentID,
+          TransactionDate: now,
+          Amount: amountSamples[i % amountSamples.length],
+          TransactionType: typeSamples[i % typeSamples.length],
+        };
+        if (needsTimestamps) {
+          r.createdAt = now;
+          r.updatedAt = now;
+        }
+        rows.push(r);
       }
-      rows.push(r);
     }
 
-    return queryInterface.bulkInsert('TransactionSummary', rows, {});
+    if (rows.length > 0) {
+      return queryInterface.bulkInsert('TransactionSummary', rows, {});
+    } else {
+      console.warn('No TransactionSummary rows inserted: not enough valid payments or reports.');
+      return;
+    }
   },
 
   down: async (queryInterface, Sequelize) => {
