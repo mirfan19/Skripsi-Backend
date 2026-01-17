@@ -13,10 +13,19 @@ exports.createSupplier = async (req, res) => {
 
 exports.getAllSuppliers = async (req, res) => {
   try {
+
     const suppliers = await Supplier.findAll();
+
     res.status(200).json(suppliers);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('getAllSuppliers: Error occurred:', error);
+    console.error('getAllSuppliers: Error message:', error.message);
+    console.error('getAllSuppliers: Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: 'Failed to fetch suppliers'
+    });
   }
 };
 

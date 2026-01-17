@@ -52,7 +52,7 @@ exports.addToCart = async (req, res) => {
       data: cartItem
     });
   } catch (error) {
-    console.error('Error adding to cart:', error);
+    console.error('Error adding to cart:', error.message);
     res.status(500).json({
       success: false,
       message: error.message
@@ -115,7 +115,7 @@ exports.updateCartItem = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
   try {
     const { cartId } = req.params;
-    
+
     const deleted = await Cart.destroy({
       where: { CartID: cartId }
     });
@@ -152,7 +152,7 @@ exports.clearUserCart = async (req, res) => {
       message: 'Cart cleared successfully'
     });
   } catch (error) {
-    console.error('Error clearing cart:', error);
+    console.error('Error clearing cart:', error.message);
     res.status(500).json({
       success: false,
       message: error.message

@@ -150,14 +150,14 @@ exports.getAllOrders = async (req, res) => {
   try {
     const { search } = req.query;
     let whereClause = {};
-      if (search) {
+    if (search) {
       whereClause = {
         [db.Sequelize.Op.or]: [
           { '$User.Username$': { [db.Sequelize.Op.like]: `%${search}%` } },
           { OrderID: { [db.Sequelize.Op.eq]: search } }
         ]
       };
-    }const orders = await Order.findAll({
+    } const orders = await Order.findAll({
       include: [
         {
           model: db.User,
@@ -171,11 +171,11 @@ exports.getAllOrders = async (req, res) => {
 
     res.status(200).json(orders);
   } catch (error) {
-    console.error('Error getting orders:', error);
-    res.status(500).json({ 
-      success: false, 
+    console.error('Error getting orders:', error.message);
+    res.status(500).json({
+      success: false,
       message: 'Error retrieving orders',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -213,7 +213,7 @@ exports.getOrderById = async (req, res) => {
 
     res.status(200).json(order);
   } catch (error) {
-    console.error('Error getting order details:', error);
+    console.error('Error getting order details:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error retrieving order details',
@@ -229,7 +229,7 @@ exports.updateOrder = async (req, res) => {
     const orderId = req.params.OrderID;
 
     const order = await Order.findByPk(orderId);
-    
+
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -257,7 +257,7 @@ exports.updateOrder = async (req, res) => {
       data: updatedOrder
     });
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('Error updating order:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error updating order',
@@ -288,7 +288,7 @@ exports.getNewOrdersCount = async () => {
     });
     return count;
   } catch (error) {
-    console.error('Error getting new orders count:', error);
+    console.error('Error getting new orders count:', error.message);
     throw error;
   }
 };

@@ -1,12 +1,13 @@
 'use strict';
 
+
 const { Product, Supplier } = require('../models'); // Add Supplier to the imports
 const { Op } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
   try {
-    console.log('Request body:', req.body);
-    console.log('Request file:', req.file);
+
+
 
     const { ProductName, Description, Price, StockQuantity, Category, SupplierID } = req.body;
 
@@ -16,7 +17,7 @@ exports.createProduct = async (req, res) => {
         message: 'All required fields must be provided'
       });
     }
-    console.log('nih supplier id', SupplierID);
+
     const productData = {
       ProductName,
       Description,
@@ -27,7 +28,7 @@ exports.createProduct = async (req, res) => {
       ImageURL: req.file ? `/uploads/product/${req.file.filename}` : null
     };
 
-    console.log('Creating product with data:', productData);
+
 
     const product = await Product.create(productData);
 
@@ -37,7 +38,7 @@ exports.createProduct = async (req, res) => {
       data: product
     });
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error('Error creating product:', error.message);
     res.status(500).json({
       success: false,
       message: 'Error creating product',
@@ -65,42 +66,54 @@ exports.getAllProducts = async (req, res) => {
       attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'StockQuantity', 'ImageURL'],
       order: [['ProductName', 'ASC']]
     });
-    
-    res.status(200).json({ 
+
+    res.status(200).json({
       success: true,
-      data: products 
+      data: products
     });
   } catch (error) {
-    console.error('Error in getAllProducts:', error);
-    res.status(500).json({ 
-      success: false, 
+    console.error('Error in getAllProducts:', error.message);
+    res.status(500).json({
+      success: false,
       error: 'Failed to fetch products',
-      message: error.message 
+      message: error.message
     });
   }
 };
 
 exports.getProductById = async (req, res) => {
   try {
+
     const product = await Product.findByPk(req.params.id);
     if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
     }
-    res.status(200).json(product);
+
+    res.status(200).json({
+      success: true,
+      data: product
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('getProductById: Error occurred:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: 'Failed to fetch product details'
+    });
   }
 };
 
 exports.updateProduct = async (req, res) => {
   try {
-    console.log('Updating product with ID:', req.params.id);
-    console.log('Request body:', req.body);
-    console.log('File:', req.file);
+
 
     // Validate required fields
-    const { ProductName, Description, Price, StockQuantity, SupplierID } = req.body;
-    
+    const { ProductName, Description, Price, StockQuantity, SupplierID, Category } = req.body;
+
     if (!ProductName || !Description || !Price || !StockQuantity || !SupplierID) {
       return res.status(400).json({
         success: false,
@@ -112,6 +125,13 @@ exports.updateProduct = async (req, res) => {
     const price = parseFloat(Price);
     const stockQuantity = parseInt(StockQuantity);
     const supplierId = parseInt(SupplierID);
+
+    if (isNaN(supplierId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid SupplierID'
+      });
+    }
 
     if (isNaN(price) || price < 0) {
       return res.status(400).json({
@@ -127,20 +147,37 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
+    // Check if supplier exists
+    let supplier;
+    try {
+      if (!Supplier) throw new Error('Supplier model is not loaded!');
+      supplier = await Supplier.findByPk(supplierId);
+    } catch (err) {
+      console.error('Error checking supplier:', err);
+      throw new Error(`Supplier check failed: ${err.message}`);
+    }
+
+    if (!supplier) {
+      return res.status(400).json({
+        success: false,
+        message: 'Supplier not found'
+      });
+    }
+
     const updateData = {
       ProductName,
       Description,
       Price: price,
       StockQuantity: stockQuantity,
-      SupplierID: supplierId
+      SupplierID: supplierId,
+      Category: Category || 'Lainnya'
     };
 
     if (req.file) {
       updateData.ImageURL = `/uploads/product/${req.file.filename}`;
-      console.log('New image path:', updateData.ImageURL);
     }
 
-    console.log('Update data:', updateData);
+
 
     // First check if product exists
     const existingProduct = await Product.findByPk(req.params.id);
@@ -152,13 +189,17 @@ exports.updateProduct = async (req, res) => {
     }
 
     // Update the product
-    await Product.update(updateData, {
-      where: { ProductID: req.params.id }
-    });
+    try {
+      await Product.update(updateData, {
+        where: { ProductID: req.params.id }
+      });
+    } catch (err) {
+      console.error('Error in Product.update:', err);
+      throw err; // Re-throw to be caught by main handler
+    }
 
     // Fetch updated product
     const updatedProduct = await Product.findByPk(req.params.id);
-    console.log('Product updated successfully:', updatedProduct);
 
     res.status(200).json({
       success: true,
@@ -166,11 +207,13 @@ exports.updateProduct = async (req, res) => {
       data: updatedProduct
     });
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error('Error updating product:', error.message);
+
     res.status(500).json({
       success: false,
       message: 'An error occurred while updating the product',
-      error: error.message
+      error: error.message,
+      details: error.name // Send error name to frontend for easier identification
     });
   }
 };
@@ -185,7 +228,33 @@ exports.deleteProduct = async (req, res) => {
     }
     res.status(204).send();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error deleting product:', error.message);
+
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      let message = 'Cannot delete product because it is referenced in other records.';
+
+      // Check specific tables based on constraints
+      // error.parent.table is available in Postgres
+      const table = error.parent && error.parent.table;
+
+      if (table === 'Carts' || error.index === 'Carts_ProductID_fkey') {
+        message = 'Cannot delete this product because it is currently in a Customer Cart. Please ask users to remove it or delete the cart data first.';
+      } else if (table === 'OrderItems' || table === 'Orders' || error.index === 'OrderItems_ProductID_fkey') {
+        message = 'Cannot delete this product because it is part of a simplified Order history.';
+      }
+
+      return res.status(409).json({
+        success: false,
+        message: message,
+        error: 'Foreign Key Constraint Violation'
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete product',
+      error: error.message
+    });
   }
 };
 
@@ -201,7 +270,7 @@ exports.getProductCatalog = async (req, res) => {
 exports.getProductDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const product = await Product.findOne({
       where: { ProductID: id },
       include: [{
@@ -223,7 +292,7 @@ exports.getProductDetail = async (req, res) => {
       data: product
     });
   } catch (error) {
-    console.error('Error getting product detail:', error);
+    console.error('Error getting product detail:', error.message);
     res.status(500).json({
       success: false,
       message: error.message

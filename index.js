@@ -23,23 +23,14 @@ if (!dbHost) {
 
 const db = require('./models');
 const { router: mainRouter } = require('./routes');
-const { Pool } = require('pg');
+// const { Pool } = require('pg'); // Remove raw pg pool to avoid conflicts
 
 const app = express();
 
 // PostgreSQL connection pool (only if DATABASE_URL provided)
-let pool;
-if (process.env.DATABASE_URL) {
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
-  });
-
-  pool.connect()
-    .then(() => console.log('Connected to Supabase PostgreSQL 🚀'))
-    .catch(err => console.error('Connection error', err.stack));
-} else {
-  console.warn('No DATABASE_URL provided — skipping direct pg Pool connection.');
+// Rely on Sequelize for connection management
+if (!process.env.DATABASE_URL) {
+  console.warn('No DATABASE_URL provided.');
 }
 
 // CORS configuration
@@ -54,10 +45,12 @@ app.use('/uploads/product', express.static(path.join(__dirname, 'uploads/product
 app.use('/api', mainRouter);
 
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  console.error('Global Error Handler:', err);
+  console.error('Stack:', err.stack);
   res.status(err.status || 500).json({
     success: false,
-    error: err.message || 'Internal Server Error'
+    error: err.message || 'Internal Server Error',
+    details: err.stack
   });
 });
 

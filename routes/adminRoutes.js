@@ -8,6 +8,8 @@ const transactionController = require('../controllers/transactionController');
 const financialReportController = require('../controllers/financialReportController');
 const supplierController = require('../controllers/supplierController');
 
+
+
 // Dashboard stats endpoints
 router.get('/stats/total-sales', isAdmin, transactionController.getTotalSales);
 
@@ -31,9 +33,33 @@ router.get('/stats/low-stock', isAdmin, async (req, res) => {
 
 // Product management
 router.get('/products', isAdmin, productController.getAllProducts);
-router.post('/products', isAdmin, upload.single('image'), productController.createProduct);
+router.post('/products', isAdmin, (req, res, next) => {
+  upload.single('image')(req, res, function (err) {
+    if (err) {
+      console.error('Multer upload error:', err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'File upload error',
+        error: err.message
+      });
+    }
+    next();
+  });
+}, productController.createProduct);
 router.get('/products/:id', isAdmin, productController.getProductById);
-router.put('/products/:id', isAdmin, upload.single('image'), productController.updateProduct);
+router.put('/products/:id', isAdmin, (req, res, next) => {
+  upload.single('image')(req, res, function (err) {
+    if (err) {
+      console.error('Multer upload error:', err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'File upload error',
+        error: err.message
+      });
+    }
+    next();
+  });
+}, productController.updateProduct);
 router.delete('/products/:id', isAdmin, productController.deleteProduct);
 
 // Order management
