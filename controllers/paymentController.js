@@ -47,6 +47,9 @@ exports.createPayment = async (req, res) => {
           },
           customer_details: {
             ...order.ShippingDetails
+          },
+          callbacks: {
+            finish: `${process.env.FRONTEND_URL}/order-confirmation`
           }
         };
 
@@ -150,7 +153,7 @@ exports.getPaymentByOrderId = async (req, res) => {
     const payment = await Payment.findOne({
       where: { OrderID: req.params.orderId }
     });
-    
+
     if (!payment) {
       return res.status(404).json({
         success: false,

@@ -211,7 +211,10 @@ exports.getOrderById = async (req, res) => {
       });
     }
 
-    res.status(200).json(order);
+    res.status(200).json({
+      success: true,
+      data: order
+    });
   } catch (error) {
     console.error('Error getting order details:', error.message);
     res.status(500).json({
