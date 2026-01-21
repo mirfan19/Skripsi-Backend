@@ -24,26 +24,19 @@ module.exports = {
     }
 
     await queryInterface.bulkDelete('OrderItems', null, { restartIdentity: true });
-    return queryInterface.bulkInsert('OrderItems', [
-      {
-        OrderID: orders[0].OrderID,
-        ProductID: products[0].ProductID,
-        Quantity: 2,
+
+    const orderItems = [];
+    orders.forEach((order) => {
+      // Add at least one item to every order
+      orderItems.push({
+        OrderID: order.OrderID,
+        ProductID: products[Math.floor(Math.random() * products.length)].ProductID,
+        Quantity: Math.floor(Math.random() * 3) + 1,
         Price: 15000.00,
-      },
-      {
-        OrderID: orders[0].OrderID,
-        ProductID: products[1].ProductID,
-        Quantity: 1,
-        Price: 20000.00,
-      },
-      {
-        OrderID: orders[1].OrderID,
-        ProductID: products[2].ProductID,
-        Quantity: 3,
-        Price: 10000.00,
-      },
-    ]);
+      });
+    });
+
+    return queryInterface.bulkInsert('OrderItems', orderItems);
   },
 
   down: async (queryInterface, Sequelize) => {

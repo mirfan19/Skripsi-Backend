@@ -7,10 +7,12 @@ const orderController = require('../controllers/orderController');
 const transactionController = require('../controllers/transactionController');
 const financialReportController = require('../controllers/financialReportController');
 const supplierController = require('../controllers/supplierController');
+const adminController = require('../controllers/adminController');
 
 
 
 // Dashboard stats endpoints
+router.get('/dashboard/stats', isAdmin, adminController.getDashboardStats);
 router.get('/stats/total-sales', isAdmin, transactionController.getTotalSales);
 
 router.get('/stats/new-orders', isAdmin, async (req, res) => {

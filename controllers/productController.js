@@ -1,7 +1,7 @@
 'use strict';
 
 
-const { Product, Supplier } = require('../models'); // Add Supplier to the imports
+const { Product, Supplier, ActivityLog } = require('../models'); // Add Supplier and ActivityLog to the imports
 const { Op } = require('sequelize');
 
 exports.createProduct = async (req, res) => {
@@ -31,6 +31,18 @@ exports.createProduct = async (req, res) => {
 
 
     const product = await Product.create(productData);
+
+    // Log Activity
+    try {
+      await ActivityLog.create({
+        Action: 'ADD_PRODUCT',
+        Description: `Produk baru ditambahkan: ${product.ProductName}`,
+        EntityName: 'Product',
+        EntityID: product.ProductID
+      });
+    } catch (logError) {
+      console.error('Failed to create activity log:', logError);
+    }
 
     res.status(201).json({
       success: true,
@@ -201,6 +213,18 @@ exports.updateProduct = async (req, res) => {
     // Fetch updated product
     const updatedProduct = await Product.findByPk(req.params.id);
 
+    // Log Activity
+    try {
+      await ActivityLog.create({
+        Action: 'UPDATE_PRODUCT',
+        Description: `Produk diperbarui: ${updatedProduct.ProductName}`,
+        EntityName: 'Product',
+        EntityID: updatedProduct.ProductID
+      });
+    } catch (logError) {
+      console.error('Failed to create activity log:', logError);
+    }
+
     res.status(200).json({
       success: true,
       message: 'Product updated successfully',
@@ -220,12 +244,28 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
+    // Fetch product name for logging BEFORE deletion
+    const product = await Product.findByPk(req.params.id);
+    const productName = product ? product.ProductName : req.params.id;
+
     const deleted = await Product.destroy({
       where: { ProductID: req.params.id },
     });
     if (!deleted) {
       return res.status(404).json({ error: 'Product not found' });
     }
+
+    try {
+      await ActivityLog.create({
+        Action: 'DELETE_PRODUCT',
+        Description: `Produk dihapus: ${productName}`,
+        EntityName: 'Product',
+        EntityID: req.params.id
+      });
+    } catch (logError) {
+      console.error('Failed to create activity log:', logError);
+    }
+
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting product:', error.message);

@@ -1,6 +1,6 @@
 'use strict';
 
-const { Order, OrderItem, Product, Cart } = require('../models');
+const { Order, OrderItem, Product, Cart, ActivityLog } = require('../models');
 const db = require('../models');
 
 // Create a new order
@@ -57,6 +57,19 @@ exports.createOrder = async (req, res) => {
     }
 
     await t.commit();
+
+    // Log Activity
+    try {
+      await db.ActivityLog.create({
+        Action: 'CREATE_ORDER',
+        Description: `Pesanan #${order.OrderID} dibuat`,
+        EntityName: 'Order',
+        EntityID: order.OrderID
+      });
+    } catch (logError) {
+      console.error('Failed to create activity log:', logError);
+    }
+
     res.status(201).json({
       success: true,
       data: {
@@ -66,7 +79,7 @@ exports.createOrder = async (req, res) => {
       },
     });
   } catch (error) {
-    await t.rollback();
+    if (t) await t.rollback();
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -80,7 +93,7 @@ exports.addItemToOrder = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
     const orderItem = await OrderItem.create({
-      OrderID, // Use OrderID as the foreign key
+      OrderID,
       ProductID,
       Quantity,
       Price: product.Price,
@@ -95,7 +108,7 @@ exports.addItemToOrder = async (req, res) => {
 exports.checkoutOrder = async (req, res) => {
   try {
     const { OrderID } = req.body;
-    const order = await Order.findByPk(OrderID); // Use OrderID as the primary key
+    const order = await Order.findByPk(OrderID);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
@@ -110,7 +123,7 @@ exports.checkoutOrder = async (req, res) => {
 // View order status
 exports.getOrderStatus = async (req, res) => {
   try {
-    const order = await Order.findByPk(req.params.OrderID); // Use OrderID in params
+    const order = await Order.findByPk(req.params.OrderID);
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
     }
@@ -157,11 +170,12 @@ exports.getAllOrders = async (req, res) => {
           { OrderID: { [db.Sequelize.Op.eq]: search } }
         ]
       };
-    } const orders = await Order.findAll({
+    }
+    const orders = await Order.findAll({
       include: [
         {
           model: db.User,
-          as: 'User', // Added the alias here
+          as: 'User',
           attributes: ['Username']
         }
       ],
@@ -254,6 +268,18 @@ exports.updateOrder = async (req, res) => {
       ]
     });
 
+    // Log Activity
+    try {
+      await db.ActivityLog.create({
+        Action: 'UPDATE_ORDER_STATUS',
+        Description: `Status pesanan #${orderId} diperbarui menjadi ${status}`,
+        EntityName: 'Order',
+        EntityID: orderId
+      });
+    } catch (logError) {
+      console.error('Failed to create activity log:', logError);
+    }
+
     res.status(200).json({
       success: true,
       message: 'Order updated successfully',
@@ -273,7 +299,7 @@ exports.updateOrder = async (req, res) => {
 exports.deleteOrder = async (req, res) => {
   try {
     const deleted = await Order.destroy({
-      where: { OrderID: req.params.OrderID }, // Use OrderID in params
+      where: { OrderID: req.params.OrderID },
     });
     if (!deleted) {
       return res.status(404).json({ error: 'Order not found' });
