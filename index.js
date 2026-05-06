@@ -74,7 +74,7 @@ if (process.env.VERCEL && serverless) {
         // Start cron jobs after successful db connection
         startCronJobs();
       }
-      app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+      app.listen(PORT, '0.0.0.0', () => console.log(`Server running on ${PORT}`));
     } catch (err) {
       console.error('Unable to connect to the database:', err);
       process.exit(1);
