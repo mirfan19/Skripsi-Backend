@@ -23,7 +23,7 @@ if (!dbHost) {
 
 const db = require('./models');
 const { router: mainRouter } = require('./routes');
-// const { Pool } = require('pg'); // Remove raw pg pool to avoid conflicts
+const { startCronJobs } = require('./scripts/cronJob');
 
 const app = express();
 
@@ -71,6 +71,8 @@ if (process.env.VERCEL && serverless) {
         } else {
           await db.sequelize.sync();
         }
+        // Start cron jobs after successful db connection
+        startCronJobs();
       }
       app.listen(PORT, () => console.log(`Server running on ${PORT}`));
     } catch (err) {

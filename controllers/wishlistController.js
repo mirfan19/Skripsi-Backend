@@ -97,7 +97,7 @@ exports.getWishlistByUser = async (req, res) => {
       include: [{
         model: Product,
         as: 'Product',
-        attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'ImageURL', 'StockQuantity']
+        attributes: ['ProductID', 'ProductName', 'Description', 'Price', 'PreviousPrice', 'ImageURL', 'StockQuantity', 'IsFlashSale', 'DiscountPercentage']
       }]
     });
 

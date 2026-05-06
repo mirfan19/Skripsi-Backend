@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  Product.init(
+    Product.init(
     {
       ProductID: {
         type: DataTypes.INTEGER,
@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
       },
+      PreviousPrice: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+      },
       StockQuantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -56,6 +60,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'Lainnya',
+      },
+      IsFlashSale: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      DiscountPercentage: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
     },
     {

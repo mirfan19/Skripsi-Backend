@@ -16,6 +16,7 @@ const authRoutes = require("./authRoutes");
 const cartRoutes = require("./cartRoutes");
 const adminRoutes = require("./adminRoutes");
 const monthlyReportRoutes = require("./monthlyReportRoutes");
+const notificationRoutes = require("./notificationRoutes");
 
 // Default route
 router.get("/", (req, res) => {
@@ -39,6 +40,7 @@ router.use("/v1/monthlyReports", monthlyReportRoutes);
 router.use("/v1/auth", authRoutes);
 router.use("/v1/cart", cartRoutes);
 router.use("/v1/admin", adminRoutes);
+router.use("/v1/notifications", notificationRoutes);
 
 // 404 Not Found handler
 router.use((req, res, next) => {
@@ -73,5 +75,6 @@ module.exports = {
     authRoutes,
     cartRoutes,
     adminRoutes,
-    monthlyReportRoutes
+    monthlyReportRoutes,
+    notificationRoutes
 };
