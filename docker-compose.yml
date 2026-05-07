@@ -18,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     command: npm start
     env_file:
       - .env
