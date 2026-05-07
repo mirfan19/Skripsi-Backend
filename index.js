@@ -13,13 +13,7 @@ try {
 }
 require('dotenv').config();
 
-// quick guard:     require DATABASE_URL or DB_HOST before attempting DB connect
-const dbHost = process.env.DATABASE_URL || process.env.DB_HOST;
-if (!dbHost) {
-  // clear message so Vercel logs show why it failed
-  console.error('Missing DB config: set DATABASE_URL (preferred) or DB_HOST/DB_USER/DB_PASSWORD in env.');
-  process.exit(1);
-}
+// Removed quick guard because we dynamically resolve DB config in config.js
 
 const db = require('./models');
 const { router: mainRouter } = require('./routes');
